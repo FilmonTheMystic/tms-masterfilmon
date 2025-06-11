@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - TMS System Development</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+
+        .editor-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .editor-panel h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .editor-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .editor-section h4 {
+            margin: 0 0 10px 0;
+            color: #34495e;
+            font-size: 1em;
+        }
+
+        .add-btn, .remove-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px 5px 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .add-btn:hover {
+            background: #219a52;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Flag borders */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to right, 
+                #009639 0%, #009639 33.33%, 
+                #ff0000 33.33%, #ff0000 66.66%, 
+                #0066cc 66.66%, #0066cc 100%);
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to right, 
+                #009639 0%, #009639 33.33%, 
+                #ffde00 33.33%, #ffde00 66.66%, 
+                #ff0000 66.66%, #ff0000 100%);
+        }
+
+        /* Editable text styles */
+        .editable {
+            cursor: pointer;
+            position: relative;
+            border: 2px solid transparent;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .editable:hover {
+            background: #f0f8ff;
+            border-color: #3498db;
+        }
+
+        .editable.editing {
+            background: white;
+            border-color: #2980b9;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .editable input, .editable textarea {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            color: inherit;
+            outline: none;
+            resize: none;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+
+        .company-info h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .company-info p {
+            margin: 5px 0;
+            color: #7f8c8d;
+        }
+
+        .invoice-details {
+            text-align: right;
+        }
+
+        .invoice-title {
+            font-size: 2em;
+            color: #e74c3c;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .invoice-meta {
+            margin-top: 10px;
+        }
+
+        .client-section, .project-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .feature-item .remove-feature {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+        }
+
+        .feature-item:hover .remove-feature {
+            display: block;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .feature-desc {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .technical-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .technical-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .technical-item .remove-tech {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-left: 10px;
+            display: none;
+        }
+
+        .technical-item:hover .remove-tech {
+            display: block;
+        }
+
+        .pricing-section {
+            background: #ecf0f1;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .discount-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .discount-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .discount-controls label {
+            font-weight: 600;
+            color: #856404;
+        }
+
+        .discount-controls select {
+            padding: 8px 12px;
+            border: 2px solid #ffeaa7;
+            border-radius: 5px;
+            background: white;
+            font-size: 16px;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .pricing-table th,
+        .pricing-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .pricing-table th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+        }
+
+        .pricing-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .total-section {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 100px;
+            margin: 10px 0;
+        }
+
+        .final-total {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e74c3c;
+            border-top: 3px solid #e74c3c;
+            padding-top: 10px;
+        }
+
+        .payment-info {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 10px 10px 10px 0;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8e6cf 0%, #dcedc1 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .feature-input-container, .tech-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .feature-input-container input, .tech-input-container input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .feature-name-input {
+            width: 200px;
+            font-weight: 600;
+        }
+
+        .feature-desc-input {
+            flex: 1;
+        }
+
+        .tech-name-input {
+            width: 200px;
+            font-weight: 600;
+        }
+
+        .tech-desc-input {
+            flex: 1;
+        }
+
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; }
+            .controls { display: none; }
+            .btn { display: none; }
+            .editor-panel { display: none; }
+            .main-container { grid-template-columns: 1fr; }
+            .editable:hover { background: transparent; border-color: transparent; }
+            .remove-feature, .remove-tech { display: none !important; }
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .editor-panel {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Editor Panel -->
+        <div class="editor-panel">
+            <h3>📝 Invoice Editor</h3>
+            <p style="color: #7f8c8d; font-size: 0.9em; margin-bottom: 20px;">
+                Click on any text in the invoice to edit it. Use the buttons below to manage features and technical items.
+            </p>
+
+            <div class="editor-section">
+                <h4>🌟 Core Features Management</h4>
+                <button class="add-btn" onclick="addFeature()">+ Add Feature</button>
+                <p style="font-size: 0.8em; color: #666; margin: 10px 0 0 0;">
+                    Click the × button on features to remove them
+                </p>
+            </div>
+
+            <div class="editor-section">
+                <h4>🚀 Technical Excellence Management</h4>
+                <button class="add-btn" onclick="addTechnicalItem()">+ Add Technical Item</button>
+                <p style="font-size: 0.8em; color: #666; margin: 10px 0 0 0;">
+                    Click the × button on items to remove them
+                </p>
+            </div>
+
+            <div class="editor-section">
+                <h4>💾 Data Management</h4>
+                <button class="add-btn" onclick="saveData()" style="background: #3498db;">💾 Save Changes</button>
+                <button class="add-btn" onclick="loadData()" style="background: #f39c12;">📂 Load Saved</button>
+                <button class="add-btn" onclick="resetData()" style="background: #95a5a6;">🔄 Reset Default</button>
+            </div>
+
+            <div class="editor-section">
+                <h4>📄 Export Options</h4>
+                <button class="btn" onclick="downloadPDF()" style="width: 100%; margin: 5px 0;">📥 Download PDF</button>
+                <button class="btn btn-success" onclick="window.print()" style="width: 100%; margin: 5px 0;">🖨️ Print Invoice</button>
+            </div>
+        </div>
+
+        <!-- Invoice Content -->
+        <div class="container">
+            <!-- Header Section -->
+            <div class="header">
+                <div class="company-info">
+                    <h1 class="editable" data-field="company_name">FlySoftwares</h1>
+                    <p><strong class="editable" data-field="company_tagline">Premium Software Development</strong></p>
+                    <p class="editable" data-field="company_location">📍 Johannesburg, South Africa</p>
+                    <p class="editable" data-field="company_email">📧 admin@flysoftwares.co.za</p>
+                    <p class="editable" data-field="company_phone">📞 +27 11 123 4567</p>
+                    <p class="editable" data-field="company_tax">🆔 TAX: ZA123456789</p>
+                </div>
+                <div class="invoice-details">
+                    <h2 class="invoice-title editable" data-field="invoice_title">DEVELOPMENT INVOICE</h2>
+                    <div class="invoice-meta">
+                        <p><strong>Invoice #:</strong> <span class="amount editable" data-field="invoice_number">FS-TMS-2025-001</span></p>
+                        <p><strong>Date:</strong> <span id="currentDate"></span></p>
+                        <p><strong>Due Date:</strong> <span id="dueDate"></span></p>
+                        <p><strong>Status:</strong> <span class="highlight editable" data-field="invoice_status">PENDING PAYMENT</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Information -->
+            <div class="client-section">
+                <h3 class="section-title">👤 Client Information</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div>
+                        <p><strong>Client Name:</strong> <span class="editable" data-field="client_name">Efrem Belay</span></p>
+                        <p><strong>Company:</strong> <span class="editable" data-field="client_company">Property Management Solutions</span></p>
+                        <p><strong>Email:</strong> <span class="editable" data-field="client_email">efrem.belay@email.com</span></p>
+                    </div>
+                    <div>
+                        <p><strong>Project Type:</strong> <span class="editable" data-field="project_type">Custom Software Development</span></p>
+                        <p><strong>Industry:</strong> <span class="editable" data-field="project_industry">Property Management</span></p>
+                        <p><strong>Project Duration:</strong> <span class="editable" data-field="project_duration">4-6 Weeks</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Overview -->
+            <div class="project-section">
+                <h3 class="section-title editable" data-field="project_title">🏢 TMS - Tenant Management System</h3>
+                <p style="font-size: 1.1em; color: #2c3e50; margin-bottom: 20px;" class="editable" data-field="project_description">
+                    A comprehensive, modern property management solution designed specifically for efficient tenant operations, 
+                    invoice management, and business automation. Built with cutting-edge technologies and industry best practices.
+                </p>
+
+                <h4 style="color: #e74c3c; margin-top: 25px;">🌟 Core Features & Functionalities:</h4>
+                <div class="features-grid" id="featuresGrid">
+                    <!-- Features will be populated by JavaScript -->
+                </div>
+                <button class="add-btn" onclick="addFeature()" style="margin-top: 15px;">+ Add New Feature</button>
+
+                <h4 style="color: #27ae60; margin-top: 25px;">🚀 Technical Excellence:</h4>
+                <div class="technical-list">
+                    <ul style="list-style: none; padding: 0;" id="technicalList">
+                        <!-- Technical items will be populated by JavaScript -->
+                    </ul>
+                    <button class="add-btn" onclick="addTechnicalItem()" style="margin-top: 15px;">+ Add Technical Item</button>
+                </div>
+            </div>
+
+            <!-- Discount Section -->
+            <div class="discount-section">
+                <h4 style="color: #856404; margin-top: 0;">💰 Apply Discount (Optional)</h4>
+                <div class="discount-controls">
+                    <label for="discountSelect">Discount Percentage:</label>
+                    <select id="discountSelect" onchange="calculateTotal()">
+                        <option value="0">No Discount (0%)</option>
+                        <option value="5">5% - Early Payment</option>
+                        <option value="10">10% - Volume Discount</option>
+                        <option value="15">15% - Partnership Rate</option>
+                        <option value="20">20% - Special Promotion</option>
+                        <option value="25">25% - Long-term Client</option>
+                    </select>
+                </div>
+                <p id="discountNote" style="margin: 0; color: #856404; font-style: italic;">Select a discount percentage to see updated pricing</p>
+            </div>
+
+            <!-- Pricing Section -->
+            <div class="pricing-section">
+                <h3 class="section-title">💵 Investment Breakdown</h3>
+                <table class="pricing-table">
+                    <thead>
+                        <tr>
+                            <th>Service Description</th>
+                            <th>Quantity</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong class="editable" data-field="service_title">TMS - Complete Development Package</strong><br>
+                                <small class="editable" data-field="service_description">Full-stack development, database setup, authentication, UI/UX design, testing, and deployment</small>
+                            </td>
+                            <td class="amount editable" data-field="service_quantity">1</td>
+                            <td class="amount editable" data-field="service_rate">R 20,000.00</td>
+                            <td class="amount" id="serviceAmount">R 20,000.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="total-section">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span class="amount" id="subtotalAmount">R 20,000.00</span>
+                    </div>
+                    <div class="total-row" id="discountRow" style="display: none;">
+                        <span id="discountLabel">Discount (0%):</span>
+                        <span class="amount" id="discountAmount">- R 0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>VAT (15%):</span>
+                        <span class="amount" id="vatAmount">R 3,000.00</span>
+                    </div>
+                    <div class="total-row final-total">
+                        <span>TOTAL AMOUNT DUE:</span>
+                        <span class="amount" id="totalAmount">R 23,000.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="payment-info">
+                <h3 style="color: #155724; margin-top: 0;">💳 Payment Instructions</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div>
+                        <h4>🏦 Bank Transfer (EFT)</h4>
+                        <p><strong>Bank:</strong> <span class="editable" data-field="bank_name">First National Bank (FNB)</span></p>
+                        <p><strong>Account Name:</strong> <span class="editable" data-field="account_name">FlySoftwares (Pty) Ltd</span></p>
+                        <p><strong>Account Number:</strong> <span class="editable" data-field="account_number">123456789</span></p>
+                        <p><strong>Branch Code:</strong> <span class="editable" data-field="branch_code">250655</span></p>
+                        <p><strong>Reference:</strong> <span class="editable" data-field="payment_reference">FS-TMS-2025-001</span></p>
+                    </div>
+                    <div>
+                        <h4>📄 Payment Terms</h4>
+                        <p><strong>Payment Due:</strong> <span class="editable" data-field="payment_terms">Net 30 Days</span></p>
+                        <p><strong>Currency:</strong> <span class="editable" data-field="currency">South African Rand (ZAR)</span></p>
+                        <p><strong>Late Fee:</strong> <span class="editable" data-field="late_fee">2% per month after due date</span></p>
+                        <p><strong>Early Payment:</strong> <span class="editable" data-field="early_payment">2% discount if paid within 7 days</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #7f8c8d;">
+                <p><strong class="editable" data-field="footer_message">Thank you for choosing FlySoftwares!</strong></p>
+                <p class="editable" data-field="footer_description">This TMS system will revolutionize your property management operations.</p>
+                <p style="font-size: 0.9em;">Generated on <span id="generatedDate"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default data structure
+        const defaultData = {
+            features: [
+                {
+                    title: "🔐 Advanced Authentication System",
+                    description: "Secure user management with role-based access control, password reset, and session management"
+                },
+                {
+                    title: "🏠 Property & Unit Management",
+                    description: "Complete CRUD operations for properties, units, and occupancy tracking with detailed property profiles"
+                },
+                {
+                    title: "👥 Tenant Management System",
+                    description: "Comprehensive tenant profiles, lease tracking, contact management, and tenant history"
+                },
+                {
+                    title: "📄 Professional Invoice Generation",
+                    description: "Automated invoice creation with customizable templates, VAT calculations, and charge management"
+                },
+                {
+                    title: "📧 Automated Email System",
+                    description: "Professional email templates for invoices, reminders, welcome messages, and notifications"
+                },
+                {
+                    title: "📊 PDF Export & Generation",
+                    description: "High-quality PDF invoices with company branding, professional layouts, and download functionality"
+                },
+                {
+                    title: "⚡ Bulk Operations",
+                    description: "Mass invoice generation, bulk email sending, and batch data export capabilities"
+                },
+                {
+                    title: "💾 Real-time Database",
+                    description: "Firebase Firestore integration with real-time sync, data security, and cloud scalability"
+                },
+                {
+                    title: "📱 Responsive Design",
+                    description: "Mobile-first design with seamless experience across all devices and screen sizes"
+                },
+                {
+                    title: "📈 Analytics Dashboard",
+                    description: "Real-time statistics, occupancy rates, revenue tracking, and performance metrics"
+                },
+                {
+                    title: "🔍 Advanced Search & Filtering",
+                    description: "Powerful search capabilities with multiple filters, sorting options, and data export"
+                },
+                {
+                    title: "🛡️ Enterprise Security",
+                    description: "Data encryption, secure authentication, GDPR compliance, and backup systems"
+                }
+            ],
+            technical: [
+                { name: "Next.js 14", description: "Latest React framework with App Router" },
+                { name: "TypeScript", description: "Type-safe development and enhanced code quality" },
+                { name: "Firebase Integration", description: "Authentication, Firestore database, and cloud functions" },
+                { name: "Tailwind CSS", description: "Modern, responsive UI framework" },
+                { name: "PDF Generation", description: "jsPDF with professional invoice layouts" },
+                { name: "Email Service", description: "Resend integration for reliable email delivery" },
+                { name: "Form Validation", description: "Zod schemas with React Hook Form" },
+                { name: "Component Library", description: "Shadcn/ui for consistent design system" }
+            ]
+        };
+
+        // Initialize data
+        let currentData = JSON.parse(JSON.stringify(defaultData));
+
+        // Set current dates
+        const now = new Date();
+        const dueDate = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+        
+        document.getElementById('currentDate').textContent = now.toLocaleDateString();
+        document.getElementById('dueDate').textContent = dueDate.toLocaleDateString();
+        document.getElementById('generatedDate').textContent = now.toLocaleString();
+
+        // Initialize editable functionality
+        function initializeEditables() {
+            const editables = document.querySelectorAll('.editable');
+            editables.forEach(element => {
+                element.addEventListener('click', function() {
+                    if (!this.querySelector('input') && !this.querySelector('textarea')) {
+                        makeEditable(this);
+                    }
+                });
+            });
+        }
+
+        function makeEditable(element) {
+            const currentText = element.textContent;
+            const isMultiline = currentText.length > 50 || currentText.includes('\n');
+            
+            element.classList.add('editing');
+            
+            if (isMultiline) {
+                const textarea = document.createElement('textarea');
+                textarea.value = currentText;
+                textarea.style.height = Math.max(60, element.offsetHeight) + 'px';
+                element.innerHTML = '';
+                element.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                
+                textarea.addEventListener('blur', function() {
+                    element.textContent = this.value;
+                    element.classList.remove('editing');
+                });
+                
+                textarea.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        this.blur();
+                    }
+                });
+            } else {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentText;
+                element.innerHTML = '';
+                element.appendChild(input);
+                input.focus();
+                input.select();
+                
+                input.addEventListener('blur', function() {
+                    element.textContent = this.value;
+                    element.classList.remove('editing');
+                    
+                    // Update calculations if it's a pricing field
+                    if (element.dataset.field === 'service_rate' || element.dataset.field === 'service_quantity') {
+                        updateServiceAmount();
+                        calculateTotal();
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        this.blur();
+                    }
+                });
+            }
+        }
+
+        // Features management
+        function renderFeatures() {
+            const grid = document.getElementById('featuresGrid');
+            grid.innerHTML = '';
+            
+            currentData.features.forEach((feature, index) => {
+                const featureDiv = document.createElement('div');
+                featureDiv.className = 'feature-item';
+                featureDiv.innerHTML = `
+                    <button class="remove-feature" onclick="removeFeature(${index})">×</button>
+                    <div class="feature-title editable-feature-title">${feature.title}</div>
+                    <div class="feature-desc editable-feature-desc">${feature.description}</div>
+                `;
+                grid.appendChild(featureDiv);
+            });
+            
+            // Add click listeners for feature editing
+            document.querySelectorAll('.editable-feature-title').forEach((el, index) => {
+                el.addEventListener('click', () => editFeatureTitle(index));
+            });
+            
+            document.querySelectorAll('.editable-feature-desc').forEach((el, index) => {
+                el.addEventListener('click', () => editFeatureDescription(index));
+            });
+        }
+
+        function addFeature() {
+            const newFeature = {
+                title: "🆕 New Feature",
+                description: "Description of the new feature"
+            };
+            currentData.features.push(newFeature);
+            renderFeatures();
+        }
+
+        function removeFeature(index) {
+            currentData.features.splice(index, 1);
+            renderFeatures();
+        }
+
+        function editFeatureTitle(index) {
+            const titleEl = document.querySelectorAll('.editable-feature-title')[index];
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentData.features[index].title;
+            input.className = 'feature-name-input';
+            
+            titleEl.innerHTML = '';
+            titleEl.appendChild(input);
+            input.focus();
+            input.select();
+            
+            input.addEventListener('blur', function() {
+                currentData.features[index].title = this.value;
+                renderFeatures();
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') this.blur();
+            });
+        }
+
+        function editFeatureDescription(index) {
+            const descEl = document.querySelectorAll('.editable-feature-desc')[index];
+            const textarea = document.createElement('textarea');
+            textarea.value = currentData.features[index].description;
+            textarea.className = 'feature-desc-input';
+            textarea.style.height = '60px';
+            
+            descEl.innerHTML = '';
+            descEl.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            
+            textarea.addEventListener('blur', function() {
+                currentData.features[index].description = this.value;
+                renderFeatures();
+            });
+            
+            textarea.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) this.blur();
+            });
+        }
+
+        // Technical items management
+        function renderTechnical() {
+            const list = document.getElementById('technicalList');
+            list.innerHTML = '';
+            
+            currentData.technical.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'technical-item';
+                li.innerHTML = `
+                    <span>✅ <strong class="editable-tech-name">${item.name}</strong> - <span class="editable-tech-desc">${item.description}</span></span>
+                    <button class="remove-tech" onclick="removeTechnical(${index})">×</button>
+                `;
+                list.appendChild(li);
+            });
+            
+            // Add click listeners
+            document.querySelectorAll('.editable-tech-name').forEach((el, index) => {
+                el.addEventListener('click', () => editTechName(index));
+            });
+            
+            document.querySelectorAll('.editable-tech-desc').forEach((el, index) => {
+                el.addEventListener('click', () => editTechDescription(index));
+            });
+        }
+
+        function addTechnicalItem() {
+            const newItem = {
+                name: "New Technology",
+                description: "Description of the technology"
+            };
+            currentData.technical.push(newItem);
+            renderTechnical();
+        }
+
+        function removeTechnical(index) {
+            currentData.technical.splice(index, 1);
+            renderTechnical();
+        }
+
+        function editTechName(index) {
+            const nameEl = document.querySelectorAll('.editable-tech-name')[index];
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentData.technical[index].name;
+            input.className = 'tech-name-input';
+            
+            nameEl.innerHTML = '';
+            nameEl.appendChild(input);
+            input.focus();
+            input.select();
+            
+            input.addEventListener('blur', function() {
+                currentData.technical[index].name = this.value;
+                renderTechnical();
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') this.blur();
+            });
+        }
+
+        function editTechDescription(index) {
+            const descEl = document.querySelectorAll('.editable-tech-desc')[index];
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentData.technical[index].description;
+            input.className = 'tech-desc-input';
+            
+            descEl.innerHTML = '';
+            descEl.appendChild(input);
+            input.focus();
+            input.select();
+            
+            input.addEventListener('blur', function() {
+                currentData.technical[index].description = this.value;
+                renderTechnical();
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') this.blur();
+            });
+        }
+
+        // Data management
+        function saveData() {
+            const invoiceData = {
+                features: currentData.features,
+                technical: currentData.technical,
+                fields: {}
+            };
+            
+            // Save all editable field values
+            document.querySelectorAll('.editable[data-field]').forEach(el => {
+                invoiceData.fields[el.dataset.field] = el.textContent;
+            });
+            
+            localStorage.setItem('invoiceData', JSON.stringify(invoiceData));
+            alert('✅ Invoice data saved successfully!');
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('invoiceData');
+            if (saved) {
+                const invoiceData = JSON.parse(saved);
+                currentData.features = invoiceData.features || defaultData.features;
+                currentData.technical = invoiceData.technical || defaultData.technical;
+                
+                // Restore field values
+                if (invoiceData.fields) {
+                    Object.keys(invoiceData.fields).forEach(field => {
+                        const el = document.querySelector(`[data-field="${field}"]`);
+                        if (el) el.textContent = invoiceData.fields[field];
+                    });
+                }
+                
+                renderFeatures();
+                renderTechnical();
+                calculateTotal();
+                alert('📂 Invoice data loaded successfully!');
+            } else {
+                alert('❌ No saved data found!');
+            }
+        }
+
+        function resetData() {
+            if (confirm('🔄 Are you sure you want to reset to default data? This will lose all changes.')) {
+                currentData = JSON.parse(JSON.stringify(defaultData));
+                renderFeatures();
+                renderTechnical();
+                location.reload(); // Reload to reset all editable fields
+            }
+        }
+
+        // Pricing calculations
+        function updateServiceAmount() {
+            const rateText = document.querySelector('[data-field="service_rate"]').textContent;
+            const quantityText = document.querySelector('[data-field="service_quantity"]').textContent;
+            
+            const rate = parseFloat(rateText.replace(/[^\d.]/g, '')) || 20000;
+            const quantity = parseFloat(quantityText) || 1;
+            const amount = rate * quantity;
+            
+            document.getElementById('serviceAmount').textContent = `R ${amount.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`;
+        }
+
+        function calculateTotal() {
+            const rateText = document.querySelector('[data-field="service_rate"]').textContent;
+            const quantityText = document.querySelector('[data-field="service_quantity"]').textContent;
+            
+            const rate = parseFloat(rateText.replace(/[^\d.]/g, '')) || 20000;
+            const quantity = parseFloat(quantityText) || 1;
+            const subtotal = rate * quantity;
+            
+            const discountPercent = parseInt(document.getElementById('discountSelect').value);
+            const discountAmount = subtotal * (discountPercent / 100);
+            const afterDiscount = subtotal - discountAmount;
+            const vatAmount = afterDiscount * 0.15;
+            const total = afterDiscount + vatAmount;
+
+            // Update displays
+            document.getElementById('subtotalAmount').textContent = `R ${subtotal.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`;
+            
+            const discountRow = document.getElementById('discountRow');
+            if (discountPercent > 0) {
+                discountRow.style.display = 'flex';
+                document.getElementById('discountLabel').textContent = `Discount (${discountPercent}%):`;
+                document.getElementById('discountAmount').textContent = `- R ${discountAmount.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`;
+                document.getElementById('discountNote').textContent = `🎉 ${discountPercent}% discount applied! You save R ${discountAmount.toFixed(2)}`;
+            } else {
+                discountRow.style.display = 'none';
+                document.getElementById('discountNote').textContent = 'Select a discount percentage to see updated pricing';
+            }
+
+            document.getElementById('vatAmount').textContent = `R ${vatAmount.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`;
+            document.getElementById('totalAmount').textContent = `R ${total.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`;
+        }
+
+        // Helper function to clean text (remove emojis and special characters for PDF)
+        function cleanTextForPDF(text) {
+            return text.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+        }
+
+        // Professional PDF Generation - Following 2025 Best Practices
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Professional margins and spacing (industry standard)
+            const margins = {
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: 20
+            };
+            
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+            const contentWidth = pageWidth - margins.left - margins.right;
+            
+            // Get current values
+            const discountPercent = parseInt(document.getElementById('discountSelect').value);
+            const rateText = document.querySelector('[data-field="service_rate"]').textContent;
+            const quantityText = document.querySelector('[data-field="service_quantity"]').textContent;
+            
+            const rate = parseFloat(rateText.replace(/[^\d.]/g, '')) || 20000;
+            const quantity = parseFloat(quantityText) || 1;
+            const subtotal = rate * quantity;
+            const discountAmount = subtotal * (discountPercent / 100);
+            const afterDiscount = subtotal - discountAmount;
+            const vatAmount = afterDiscount * 0.15;
+            const total = afterDiscount + vatAmount;
+            
+            // Add flag colors (professional and subtle)
+            // Eritrean flag (top) - Reduced height for subtlety
+            doc.setFillColor(0, 150, 57); // Green
+            doc.rect(0, 0, pageWidth / 3, 8, 'F');
+            doc.setFillColor(255, 0, 0); // Red
+            doc.rect(pageWidth / 3, 0, pageWidth / 3, 8, 'F');
+            doc.setFillColor(0, 102, 204); // Blue
+            doc.rect((pageWidth * 2) / 3, 0, pageWidth / 3, 8, 'F');
+            
+            // Ethiopian flag (bottom)
+            doc.setFillColor(0, 150, 57); // Green
+            doc.rect(0, pageHeight - 8, pageWidth / 3, 8, 'F');
+            doc.setFillColor(255, 222, 0); // Yellow
+            doc.rect(pageWidth / 3, pageHeight - 8, pageWidth / 3, 8, 'F');
+            doc.setFillColor(255, 0, 0); // Red
+            doc.rect((pageWidth * 2) / 3, pageHeight - 8, pageWidth / 3, 8, 'F');
+            
+            let currentY = margins.top + 15; // Start below flag with proper spacing
+            
+            // HEADER SECTION - Professional layout
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(44, 62, 80); // Professional dark color
+            doc.text(cleanTextForPDF(document.querySelector('[data-field="company_name"]').textContent), margins.left, currentY);
+            
+            // Invoice title (right aligned)
+            doc.setFontSize(28);
+            doc.setTextColor(231, 76, 60); // Accent color for invoice title
+            const invoiceTitle = cleanTextForPDF(document.querySelector('[data-field="invoice_title"]').textContent);
+            const titleWidth = doc.getTextWidth(invoiceTitle);
+            doc.text(invoiceTitle, pageWidth - margins.right - titleWidth, currentY);
+            
+            currentY += 15;
+            
+            // Company tagline and details (left side)
+            doc.setFontSize(11);
+            doc.setTextColor(127, 140, 141); // Subtle gray
+            doc.setFont('helvetica', 'normal');
+            
+            const companyDetails = [
+                cleanTextForPDF(document.querySelector('[data-field="company_tagline"]').textContent),
+                cleanTextForPDF(document.querySelector('[data-field="company_location"]').textContent),
+                cleanTextForPDF(document.querySelector('[data-field="company_email"]').textContent),
+                cleanTextForPDF(document.querySelector('[data-field="company_phone"]').textContent),
+                cleanTextForPDF(document.querySelector('[data-field="company_tax"]').textContent)
+            ];
+            
+            companyDetails.forEach((detail, index) => {
+                if (detail.trim()) {
+                    doc.text(detail, margins.left, currentY + (index * 6));
+                }
+            });
+            
+            // Invoice details (right side) - Highlighted box
+            doc.setFillColor(248, 249, 250); // Light gray background
+            doc.rect(pageWidth - margins.right - 80, currentY - 5, 80, 35, 'F');
+            
+            doc.setFontSize(10);
+            doc.setTextColor(52, 73, 94); // Darker professional color
+            doc.setFont('helvetica', 'bold');
+            
+            const invoiceDetails = [
+                `Invoice #: ${cleanTextForPDF(document.querySelector('[data-field="invoice_number"]').textContent)}`,
+                `Date: ${document.getElementById('currentDate').textContent}`,
+                `Due Date: ${document.getElementById('dueDate').textContent}`,
+                `Status: ${cleanTextForPDF(document.querySelector('[data-field="invoice_status"]').textContent)}`
+            ];
+            
+            invoiceDetails.forEach((detail, index) => {
+                doc.text(detail, pageWidth - margins.right - 75, currentY + (index * 6));
+            });
+            
+            currentY += 50;
+            
+            // PROFESSIONAL SEPARATOR LINE
+            doc.setDrawColor(189, 195, 199);
+            doc.setLineWidth(0.5);
+            doc.line(margins.left, currentY, pageWidth - margins.right, currentY);
+            currentY += 15;
+            
+            // CLIENT INFORMATION SECTION - Professional two-column layout
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.setFont('helvetica', 'bold');
+            doc.text('CLIENT INFORMATION', margins.left, currentY);
+            currentY += 12;
+            
+            // Client details in organized columns
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(52, 73, 94);
+            
+            const clientInfo = [
+                [`Client Name:`, cleanTextForPDF(document.querySelector('[data-field="client_name"]').textContent)],
+                [`Company:`, cleanTextForPDF(document.querySelector('[data-field="client_company"]').textContent)],
+                [`Email:`, cleanTextForPDF(document.querySelector('[data-field="client_email"]').textContent)]
+            ];
+            
+            const projectInfo = [
+                [`Project Type:`, cleanTextForPDF(document.querySelector('[data-field="project_type"]').textContent)],
+                [`Industry:`, cleanTextForPDF(document.querySelector('[data-field="project_industry"]').textContent)],
+                [`Duration:`, cleanTextForPDF(document.querySelector('[data-field="project_duration"]').textContent)]
+            ];
+            
+            clientInfo.forEach((info, index) => {
+                doc.setFont('helvetica', 'bold');
+                doc.text(info[0], margins.left, currentY + (index * 7));
+                doc.setFont('helvetica', 'normal');
+                doc.text(info[1], margins.left + 35, currentY + (index * 7));
+            });
+            
+            projectInfo.forEach((info, index) => {
+                doc.setFont('helvetica', 'bold');
+                doc.text(info[0], margins.left + 100, currentY + (index * 7));
+                doc.setFont('helvetica', 'normal');
+                doc.text(info[1], margins.left + 135, currentY + (index * 7));
+            });
+            
+            currentY += 35;
+            
+            // PROJECT OVERVIEW SECTION
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PROJECT OVERVIEW', margins.left, currentY);
+            currentY += 12;
+            
+            // Project title and description
+            doc.setFontSize(12);
+            doc.setTextColor(231, 76, 60);
+            const projectTitle = cleanTextForPDF(document.querySelector('[data-field="project_title"]').textContent);
+            doc.text(projectTitle, margins.left, currentY);
+            currentY += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(52, 73, 94);
+            doc.setFont('helvetica', 'normal');
+            const projectDesc = cleanTextForPDF(document.querySelector('[data-field="project_description"]').textContent);
+            const descLines = doc.splitTextToSize(projectDesc, contentWidth - 20);
+            doc.text(descLines, margins.left, currentY);
+            currentY += (descLines.length * 5) + 15;
+            
+            // Check if we need a new page
+            if (currentY > pageHeight - 100) {
+                doc.addPage();
+                currentY = margins.top + 20;
+            }
+            
+            // CORE FEATURES SECTION - Professional grid layout
+            doc.setFontSize(12);
+            doc.setTextColor(39, 174, 96);
+            doc.setFont('helvetica', 'bold');
+            doc.text('CORE FEATURES & FUNCTIONALITIES', margins.left, currentY);
+            currentY += 12;
+            
+            // Features in a clean, organized layout
+            doc.setFontSize(9);
+            doc.setTextColor(52, 73, 94);
+            
+            currentData.features.forEach((feature, index) => {
+                if (currentY > pageHeight - 60) {
+                    doc.addPage();
+                    currentY = margins.top + 20;
+                }
+                
+                const cleanTitle = cleanTextForPDF(feature.title);
+                const cleanDesc = cleanTextForPDF(feature.description);
+                
+                // Feature bullet point
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(39, 174, 96);
+                doc.text('•', margins.left, currentY);
+                
+                // Feature title
+                doc.setTextColor(44, 62, 80);
+                doc.text(cleanTitle, margins.left + 8, currentY);
+                currentY += 6;
+                
+                // Feature description with proper indentation
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(127, 140, 141);
+                const descLines = doc.splitTextToSize(cleanDesc, contentWidth - 15);
+                doc.text(descLines, margins.left + 8, currentY);
+                currentY += (descLines.length * 4) + 6;
+            });
+            
+            currentY += 10;
+            
+            // TECHNICAL EXCELLENCE SECTION
+            if (currentY > pageHeight - 80) {
+                doc.addPage();
+                currentY = margins.top + 20;
+            }
+            
+            doc.setFontSize(12);
+            doc.setTextColor(155, 89, 182);
+            doc.setFont('helvetica', 'bold');
+            doc.text('TECHNICAL EXCELLENCE', margins.left, currentY);
+            currentY += 12;
+            
+            doc.setFontSize(9);
+            doc.setTextColor(52, 73, 94);
+            
+            currentData.technical.forEach((item, index) => {
+                if (currentY > pageHeight - 40) {
+                    doc.addPage();
+                    currentY = margins.top + 20;
+                }
+                
+                const cleanName = cleanTextForPDF(item.name);
+                const cleanDesc = cleanTextForPDF(item.description);
+                
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(155, 89, 182);
+                doc.text('✓', margins.left, currentY);
+                
+                doc.setTextColor(44, 62, 80);
+                doc.text(`${cleanName}:`, margins.left + 8, currentY);
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(127, 140, 141);
+                doc.text(cleanDesc, margins.left + 8 + doc.getTextWidth(`${cleanName}: `), currentY);
+                
+                currentY += 6;
+            });
+            
+            currentY += 20;
+            
+            // PRICING SECTION - Professional table
+            if (currentY > pageHeight - 120) {
+                doc.addPage();
+                currentY = margins.top + 20;
+            }
+            
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.setFont('helvetica', 'bold');
+            doc.text('INVESTMENT BREAKDOWN', margins.left, currentY);
+            currentY += 15;
+            
+            // Professional pricing table
+            const tableData = [
+                [
+                    cleanTextForPDF(document.querySelector('[data-field="service_title"]').textContent),
+                    cleanTextForPDF(document.querySelector('[data-field="service_quantity"]').textContent),
+                    cleanTextForPDF(document.querySelector('[data-field="service_rate"]').textContent),
+                    `R ${subtotal.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`
+                ]
+            ];
+            
+            // Add service description as a second row
+            const serviceDesc = cleanTextForPDF(document.querySelector('[data-field="service_description"]').textContent);
+            const descCellLines = doc.splitTextToSize(serviceDesc, 100);
+            
+            doc.autoTable({
+                startY: currentY,
+                head: [['Service Description', 'Qty', 'Rate', 'Amount']],
+                body: [
+                    [tableData[0][0] + '\n' + serviceDesc, tableData[0][1], tableData[0][2], tableData[0][3]]
+                ],
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [52, 73, 94],
+                    textColor: [255, 255, 255],
+                    fontSize: 11,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 10,
+                    textColor: [52, 73, 94]
+                },
+                columnStyles: {
+                    0: { cellWidth: 100, halign: 'left' },
+                    1: { cellWidth: 20, halign: 'center' },
+                    2: { cellWidth: 35, halign: 'right' },
+                    3: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
+                },
+                margin: { left: margins.left, right: margins.right },
+                tableLineColor: [189, 195, 199],
+                tableLineWidth: 0.1
+            });
+            
+            // TOTALS SECTION - Professional right-aligned layout
+            currentY = doc.lastAutoTable.finalY + 20;
+            const totalsX = pageWidth - margins.right - 60;
+            
+            // Background for totals
+            doc.setFillColor(248, 249, 250);
+            doc.rect(totalsX - 10, currentY - 5, 70, (discountPercent > 0 ? 35 : 25), 'F');
+            
+            doc.setFontSize(11);
+            doc.setTextColor(52, 73, 94);
+            doc.setFont('helvetica', 'normal');
+            
+            // Subtotal
+            doc.text('Subtotal:', totalsX, currentY);
+            doc.text(`R ${subtotal.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`, totalsX + 40, currentY);
+            currentY += 7;
+            
+            // Discount (if applicable)
+            if (discountPercent > 0) {
+                doc.setTextColor(231, 76, 60);
+                doc.text(`Discount (${discountPercent}%):`, totalsX, currentY);
+                doc.text(`- R ${discountAmount.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`, totalsX + 40, currentY);
+                currentY += 7;
+                doc.setTextColor(52, 73, 94);
+            }
+            
+            // VAT
+            doc.text('VAT (15%):', totalsX, currentY);
+            doc.text(`R ${vatAmount.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`, totalsX + 40, currentY);
+            currentY += 10;
+            
+            // Total - Highlighted
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(14);
+            doc.setTextColor(231, 76, 60);
+            doc.text('TOTAL DUE:', totalsX, currentY);
+            doc.text(`R ${total.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`, totalsX + 30, currentY);
+            
+            currentY += 25;
+            
+            // PAYMENT INFORMATION SECTION
+            if (currentY > pageHeight - 80) {
+                doc.addPage();
+                currentY = margins.top + 20;
+            }
+            
+            doc.setFontSize(14);
+            doc.setTextColor(44, 62, 80);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PAYMENT INFORMATION', margins.left, currentY);
+            currentY += 15;
+            
+            // Professional two-column layout for payment info
+            doc.setFontSize(10);
+            doc.setTextColor(52, 73, 94);
+            
+            // Banking details (left column)
+            doc.setFont('helvetica', 'bold');
+            doc.text('BANKING DETAILS', margins.left, currentY);
+            doc.setFont('helvetica', 'normal');
+            currentY += 8;
+            
+            const bankingDetails = [
+                [`Bank:`, cleanTextForPDF(document.querySelector('[data-field="bank_name"]').textContent)],
+                [`Account Name:`, cleanTextForPDF(document.querySelector('[data-field="account_name"]').textContent)],
+                [`Account Number:`, cleanTextForPDF(document.querySelector('[data-field="account_number"]').textContent)],
+                [`Branch Code:`, cleanTextForPDF(document.querySelector('[data-field="branch_code"]').textContent)],
+                [`Reference:`, cleanTextForPDF(document.querySelector('[data-field="payment_reference"]').textContent)]
+            ];
+            
+            bankingDetails.forEach((detail, index) => {
+                doc.setFont('helvetica', 'bold');
+                doc.text(detail[0], margins.left, currentY + (index * 6));
+                doc.setFont('helvetica', 'normal');
+                doc.text(detail[1], margins.left + 35, currentY + (index * 6));
+            });
+            
+            // Payment terms (right column)
+            doc.setFont('helvetica', 'bold');
+            doc.text('PAYMENT TERMS', margins.left + 100, currentY);
+            doc.setFont('helvetica', 'normal');
+            
+            const paymentTerms = [
+                [`Payment Due:`, cleanTextForPDF(document.querySelector('[data-field="payment_terms"]').textContent)],
+                [`Currency:`, cleanTextForPDF(document.querySelector('[data-field="currency"]').textContent)],
+                [`Late Fee:`, cleanTextForPDF(document.querySelector('[data-field="late_fee"]').textContent)],
+                [`Early Payment:`, cleanTextForPDF(document.querySelector('[data-field="early_payment"]').textContent)]
+            ];
+            
+            paymentTerms.forEach((term, index) => {
+                doc.setFont('helvetica', 'bold');
+                doc.text(term[0], margins.left + 100, currentY + (index * 6) + 8);
+                doc.setFont('helvetica', 'normal');
+                doc.text(term[1], margins.left + 135, currentY + (index * 6) + 8);
+            });
+            
+            currentY += 45;
+            
+            // PROFESSIONAL FOOTER
+            doc.setDrawColor(189, 195, 199);
+            doc.setLineWidth(0.5);
+            doc.line(margins.left, currentY, pageWidth - margins.right, currentY);
+            currentY += 10;
+            
+            doc.setFontSize(12);
+            doc.setTextColor(44, 62, 80);
+            doc.setFont('helvetica', 'bold');
+            const footerMsg = cleanTextForPDF(document.querySelector('[data-field="footer_message"]').textContent);
+            const msgWidth = doc.getTextWidth(footerMsg);
+            doc.text(footerMsg, (pageWidth - msgWidth) / 2, currentY);
+            
+            currentY += 8;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(127, 140, 141);
+            const footerDesc = cleanTextForPDF(document.querySelector('[data-field="footer_description"]').textContent);
+            const descWidth = doc.getTextWidth(footerDesc);
+            doc.text(footerDesc, (pageWidth - descWidth) / 2, currentY);
+            
+            currentY += 10;
+            doc.setFontSize(8);
+            const timestamp = `Generated on ${now.toLocaleString()}`;
+            const timestampWidth = doc.getTextWidth(timestamp);
+            doc.text(timestamp, (pageWidth - timestampWidth) / 2, currentY);
+            
+            // Save with professional filename
+            const companyName = cleanTextForPDF(document.querySelector('[data-field="company_name"]').textContent);
+            const clientName = cleanTextForPDF(document.querySelector('[data-field="client_name"]').textContent);
+            const invoiceNum = cleanTextForPDF(document.querySelector('[data-field="invoice_number"]').textContent);
+            const fileName = `${companyName}_Invoice_${invoiceNum}_${clientName.replace(/\s+/g, '')}.pdf`;
+            
+            doc.save(fileName);
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEditables();
+            renderFeatures();
+            renderTechnical();
+            calculateTotal();
+            
+            // Load saved data on startup
+            const saved = localStorage.getItem('invoiceData');
+            if (saved) {
+                setTimeout(() => {
+                    if (confirm('📂 Found saved invoice data. Would you like to load it?')) {
+                        loadData();
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
