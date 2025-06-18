@@ -17,7 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Building2, Mail, Lock, User, Eye, EyeOff, Loader2, Shield } from 'lucide-react';
 import { signUpSchema, type SignUpFormData } from '@/lib/validations/schemas';
 import { authService } from '@/lib/firebase/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/lib/hooks/use-toast';
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);

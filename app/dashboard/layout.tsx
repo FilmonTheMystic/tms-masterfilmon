@@ -1,4 +1,4 @@
-// app/(dashboard)/layout.tsx - Clean Dashboard Layout
+// app/dashboard/layout.tsx - Clean Dashboard Layout
 
 'use client';
 

@@ -34,7 +34,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { authService } from '@/lib/firebase/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/lib/hooks/use-toast';
 
 interface MobileNavProps {
   children?: React.ReactNode;

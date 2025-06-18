@@ -29,7 +29,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { authService } from '@/lib/firebase/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/lib/hooks/use-toast';
 import type { User } from '@/types';
 
 interface HeaderProps {
