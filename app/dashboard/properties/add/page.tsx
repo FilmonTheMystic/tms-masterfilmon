@@ -29,6 +29,7 @@ import { propertySchema, type PropertyFormData } from '@/lib/validations/schemas
 import { propertyService } from '@/lib/firebase/db';
 import { authService } from '@/lib/firebase/auth';
 import { useToast } from '@/lib/hooks/use-toast';
+import { GooglePlacesAutocomplete } from '@/components/shared/GooglePlacesAutocomplete';
 
 export default function AddPropertyPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +56,23 @@ export default function AddPropertyPage() {
       },
     },
   });
+
+  // Handle Google Places autocomplete selection
+  const handlePlaceSelect = (placeDetails: any) => {
+    // Auto-fill the address fields based on selected place
+    if (placeDetails.address) {
+      form.setValue('address', placeDetails.address);
+    }
+    if (placeDetails.city) {
+      form.setValue('city', placeDetails.city);
+    }
+    if (placeDetails.province) {
+      form.setValue('province', placeDetails.province);
+    }
+    if (placeDetails.postalCode) {
+      form.setValue('postalCode', placeDetails.postalCode);
+    }
+  };
 
   const onSubmit = async (data: PropertyFormData) => {
     setIsLoading(true);
@@ -196,7 +214,13 @@ export default function AddPropertyPage() {
                       <FormItem>
                         <FormLabel>Street Address</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 123 Main Street" {...field} />
+                          <GooglePlacesAutocomplete
+                            value={field.value}
+                            onChange={field.onChange}
+                            onPlaceSelect={handlePlaceSelect}
+                            placeholder="Start typing an address (e.g., 123 Main Street, Cape Town)"
+                            disabled={isLoading}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
