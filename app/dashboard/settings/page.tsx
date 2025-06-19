@@ -27,13 +27,17 @@ export default function SettingsPage() {
       const userData = await authService.getCurrentUserData();
       setCurrentUser(userData);
 
-      // Get all users from Firestore (for testing purposes)
-      const usersSnapshot = await getDocs(collection(db, 'users'));
-      const users = usersSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as UserType[];
-      setAllUsers(users);
+      // Only load all users if current user is admin or manager
+      if (userData && (userData.role === 'admin' || userData.role === 'manager')) {
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const users = usersSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as UserType[];
+        setAllUsers(users);
+      } else {
+        setAllUsers([]); // Clear users list for non-admin users
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -118,20 +122,32 @@ export default function SettingsPage() {
               <Badge variant="default">Connected</Badge>
             </div>
             
-            {allUsers.length > 0 && (
+            {currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager') && (
               <div className="mt-4">
-                <h4 className="font-medium mb-2">All Users:</h4>
-                <div className="space-y-2">
-                  {allUsers.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                      <div>
-                        <span className="font-medium">{user.name}</span>
-                        <span className="text-sm text-muted-foreground ml-2">({user.email})</span>
+                <h4 className="font-medium mb-2">All Users (Admin/Manager View):</h4>
+                {allUsers.length > 0 ? (
+                  <div className="space-y-2">
+                    {allUsers.map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                        <div>
+                          <span className="font-medium">{user.name}</span>
+                          <span className="text-sm text-muted-foreground ml-2">({user.email})</span>
+                        </div>
+                        <Badge variant="secondary">{user.role}</Badge>
                       </div>
-                      <Badge variant="secondary">{user.role}</Badge>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No users found in database.</p>
+                )}
+              </div>
+            )}
+            
+            {currentUser && currentUser.role !== 'admin' && currentUser.role !== 'manager' && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                <p className="text-sm text-yellow-800">
+                  User list is only available to Administrators and Managers.
+                </p>
               </div>
             )}
           </div>

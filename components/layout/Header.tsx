@@ -45,7 +45,47 @@ export function Header({ onMenuClick, showMobileMenu = false }: HeaderProps) {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadUserData();
+    // Listen for auth state changes and update user data accordingly
+    const unsubscribe = authService.onAuthStateChanged(async (firebaseUser) => {
+      console.log('Auth state changed:', firebaseUser?.email);
+      if (firebaseUser) {
+        try {
+          console.log('Fetching user data for:', firebaseUser.uid);
+          const userData = await authService.getCurrentUserData();
+          console.log('User data retrieved:', userData);
+          setUser(userData);
+          
+          // If no user data in Firestore, create a basic user record
+          if (!userData) {
+            console.log('No user data found, creating basic record');
+            const basicUserData = {
+              email: firebaseUser.email!,
+              name: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
+              role: 'viewer' as const,
+            };
+            await authService.updateUserProfile(firebaseUser.uid, basicUserData);
+            const newUserData = await authService.getCurrentUserData();
+            setUser(newUserData);
+          }
+        } catch (error) {
+          console.error('Failed to load user data:', error);
+          // Set basic user info from Firebase Auth as fallback
+          setUser({
+            id: firebaseUser.uid,
+            email: firebaseUser.email!,
+            name: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
+            role: 'viewer',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+      } else {
+        console.log('No user authenticated');
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const loadUserData = async () => {
@@ -54,6 +94,7 @@ export function Header({ onMenuClick, showMobileMenu = false }: HeaderProps) {
       setUser(userData);
     } catch (error) {
       console.error('Failed to load user data:', error);
+      setUser(null);
     }
   };
 

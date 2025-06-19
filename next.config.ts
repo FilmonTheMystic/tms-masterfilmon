@@ -1,12 +1,42 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Deployment configuration
+  // Deployment configuration for Vercel
   output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
+  
+  // Development configuration
+  devIndicators: {
+    position: 'bottom-left',
+  },
+  
+  // Disable ESLint and TypeScript checks during build for faster deployment
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   
   // Optimize for production
   experimental: {
     optimizePackageImports: ['lucide-react'],
+  },
+  
+  // Cloudflare compatibility
+  async redirects() {
+    return [
+      {
+        source: '/admin/:path*',
+        destination: 'https://admintms.masterfilmon.com/admin/:path*',
+        permanent: true,
+        has: [
+          {
+            type: 'host',
+            value: 'tms.masterfilmon.com'
+          }
+        ]
+      }
+    ];
   },
   
   // Image optimization

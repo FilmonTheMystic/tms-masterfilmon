@@ -10,7 +10,7 @@ import {
   User as FirebaseUser,
   UserCredential,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
 import { auth, db } from './config';
 import { User } from '@/types';
 
@@ -35,11 +35,15 @@ class AuthService {
   // Sign up with email and password
   async signUp({ email, password, name, role = 'viewer' }: SignUpData): Promise<UserCredential> {
     try {
+      console.log('Starting user registration for:', email);
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const { user } = userCredential;
+      console.log('Firebase Auth user created:', user.uid);
 
       // Update the user's display name
       await updateProfile(user, { displayName: name });
+      console.log('Display name updated');
 
       // Create user document in Firestore
       const userData: Omit<User, 'id'> = {
@@ -50,10 +54,13 @@ class AuthService {
         updatedAt: new Date(),
       };
 
+      console.log('Saving user data to Firestore:', userData);
       await setDoc(doc(db, 'users', user.uid), userData);
+      console.log('User data saved to Firestore successfully');
 
       return userCredential;
     } catch (error: any) {
+      console.error('Registration error:', error);
       throw this.handleAuthError(error);
     }
   }
@@ -196,6 +203,24 @@ class AuthService {
       console.error('Error refreshing token:', error);
       return null;
     }
+  }
+
+  // Admin-only functions
+  async setUserRole(userId: string, role: 'admin' | 'manager' | 'accountant' | 'viewer'): Promise<void> {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      role,
+      updatedAt: new Date(),
+    });
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const usersRef = collection(db, 'users');
+    const snapshot = await getDocs(usersRef);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as User[];
   }
 }
 

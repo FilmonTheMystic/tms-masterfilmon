@@ -1,7 +1,5 @@
 'use client';
 
-// app/(auth)/login/page.tsx - Login page
-
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -12,12 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Building2, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Shield, Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { signInSchema, type SignInFormData } from '@/lib/validations/schemas';
 import { authService } from '@/lib/firebase/auth';
 import { useToast } from '@/lib/hooks/use-toast';
 
-function LoginForm() {
+function AdminLoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,11 +33,16 @@ function LoginForm() {
 
   // Check if user is already authenticated
   useEffect(() => {
-    const unsubscribe = authService.onAuthStateChanged((user) => {
-      if (user) {
-        const redirectTo = searchParams.get('redirect') || '/dashboard';
+    const checkAuth = async () => {
+      const user = await authService.getCurrentUserData();
+      if (user && user.role === 'admin') {
+        const redirectTo = searchParams.get('redirect') || '/admin';
         router.push(redirectTo);
       }
+    };
+
+    const unsubscribe = authService.onAuthStateChanged(() => {
+      checkAuth();
     });
 
     return () => unsubscribe();
@@ -50,15 +53,23 @@ function LoginForm() {
     setError(null);
 
     try {
-      await authService.signIn(data);
+      const userCredential = await authService.signIn(data);
+      const userData = await authService.getCurrentUserData();
+      
+      // Verify admin access
+      if (!userData || userData.role !== 'admin') {
+        setError('Access denied. This login is for administrators only.');
+        await authService.signOut();
+        return;
+      }
       
       toast({
-        title: 'Welcome back!',
-        description: 'You have been signed in successfully.',
+        title: 'Admin access granted!',
+        description: 'Welcome to the admin panel.',
       });
 
-      // Redirect to dashboard or original destination
-      const redirectTo = searchParams.get('redirect') || '/dashboard';
+      // Redirect to admin panel or original destination
+      const redirectTo = searchParams.get('redirect') || '/admin';
       router.push(redirectTo);
     } catch (error: any) {
       setError(error.message || 'Failed to sign in. Please try again.');
@@ -68,23 +79,23 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Logo and Welcome */}
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-xl flex items-center justify-center mb-4">
-            <Building2 className="h-8 w-8 text-primary-foreground" />
+          <div className="mx-auto w-16 h-16 bg-slate-900 rounded-xl flex items-center justify-center mb-4">
+            <Shield className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome to TMS</h1>
-          <p className="text-gray-600 mt-2">Sign in to your Tenant Management System</p>
+          <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
+          <p className="text-gray-600 mt-2">Secure administrator access</p>
         </div>
 
         {/* Login Form */}
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl">Sign in</CardTitle>
+            <CardTitle className="text-xl">Administrator Sign In</CardTitle>
             <CardDescription>
-              Enter your email and password to access your account
+              Enter your admin credentials to access the administration panel
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -101,13 +112,13 @@ function LoginForm() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Admin Email</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
                             type="email"
-                            placeholder="Enter your email"
+                            placeholder="Enter your admin email"
                             className="pl-10"
                             {...field}
                           />
@@ -157,49 +168,56 @@ function LoginForm() {
                   <div className="text-sm">
                     <Link
                       href="/reset-password"
-                      className="text-primary hover:text-primary/80 font-medium"
+                      className="text-slate-600 hover:text-slate-800 font-medium"
                     >
                       Forgot password?
                     </Link>
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800" disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Signing in...
                     </>
                   ) : (
-                    'Sign in'
+                    'Sign in to Admin Panel'
                   )}
                 </Button>
               </form>
             </Form>
-
           </CardContent>
         </Card>
 
-        {/* Features */}
-        <div className="text-center text-sm text-muted-foreground">
-          <p>🏢 Property Management • 📊 Invoice Generation • 💰 Payment Tracking</p>
+        {/* Back to Main App */}
+        <div className="text-center">
+          <Link href="/" className="inline-flex items-center text-sm text-slate-600 hover:text-slate-800">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Main App
+          </Link>
+        </div>
+
+        {/* Security Notice */}
+        <div className="text-center text-xs text-muted-foreground bg-amber-50 p-3 rounded-lg border border-amber-200">
+          <p>🔒 Administrator access only • All login attempts are monitored</p>
         </div>
       </div>
     </div>
   );
 }
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Loading...</p>
+          <p>Loading admin login...</p>
         </div>
       </div>
     }>
-      <LoginForm />
+      <AdminLoginForm />
     </Suspense>
   );
 }

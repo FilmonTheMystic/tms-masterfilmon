@@ -1,0 +1,60 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow users to create their own user document during registration
+    match /users/{userId} {
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      // Allow admins and managers to read all user documents
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'manager'];
+    }
+    
+    // Properties - require authentication and proper role
+    match /properties/{propertyId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Tenants - require authentication
+    match /tenants/{tenantId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Invoices - require authentication
+    match /invoices/{invoiceId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Payments - require authentication
+    match /payments/{paymentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Units - require authentication
+    match /units/{unitId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Charge Templates - require authentication
+    match /chargeTemplates/{templateId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Utility Readings - require authentication
+    match /utilityReadings/{readingId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Debug collection (remove in production)
+    match /debug/{debugId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Test collection for diagnostics
+    match /test/{testId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
