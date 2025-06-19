@@ -2,7 +2,7 @@
 
 // components/layout/MobileNav.tsx - Mobile navigation component
 
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -38,6 +38,10 @@ import { useToast } from '@/lib/hooks/use-toast';
 
 interface MobileNavProps {
   children?: React.ReactNode;
+}
+
+interface MobileNavRef {
+  openMenu: () => void;
 }
 
 const navigationItems = [
@@ -123,12 +127,17 @@ const quickActions = [
   },
 ];
 
-export function MobileNav({ children }: MobileNavProps) {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
-  const { toast } = useToast();
+export const MobileNav = forwardRef<MobileNavRef, MobileNavProps>(
+  ({ children }, ref) => {
+    const pathname = usePathname();
+    const [open, setOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [expandedItems, setExpandedItems] = useState<string[]>([]);
+    const { toast } = useToast();
+
+    useImperativeHandle(ref, () => ({
+      openMenu: () => setOpen(true),
+    }));
 
   const toggleExpanded = (href: string) => {
     setExpandedItems(prev =>
@@ -180,13 +189,6 @@ export function MobileNav({ children }: MobileNavProps) {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        {children || (
-          <Button variant="ghost" size="sm" className="lg:hidden">
-            <Menu className="h-4 w-4" />
-          </Button>
-        )}
-      </SheetTrigger>
       <SheetContent side="left" className="w-80 p-0">
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -380,4 +382,6 @@ export function MobileNav({ children }: MobileNavProps) {
       </SheetContent>
     </Sheet>
   );
-}
+});
+
+MobileNav.displayName = 'MobileNav';

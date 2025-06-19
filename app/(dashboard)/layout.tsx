@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
@@ -19,6 +19,7 @@ export default function DashboardLayout({
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const mobileNavRef = useRef<{ openMenu: () => void }>(null);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -108,7 +109,7 @@ export default function DashboardLayout({
         {/* Header */}
         <Header
           onMenuClick={() => {
-            // Mobile menu toggle will be handled by Header component
+            mobileNavRef.current?.openMenu();
           }}
           showMobileMenu={true}
         />
@@ -121,8 +122,8 @@ export default function DashboardLayout({
         </main>
       </div>
 
-      {/* Mobile Navigation */}
-      <MobileNav />
+      {/* Mobile Navigation - Hidden, controlled by Header */}
+      <MobileNav ref={mobileNavRef} />
 
       {/* Toast Notifications */}
       <Toaster />

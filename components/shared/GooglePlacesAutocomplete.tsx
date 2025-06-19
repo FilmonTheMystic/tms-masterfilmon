@@ -48,32 +48,47 @@ export function GooglePlacesAutocomplete({
   const [isApiLoaded, setIsApiLoaded] = useState(false);
 
   const loadGoogleMapsScript = () => {
-    if (window.google && window.google.maps) {
+    if (window.google && window.google.maps && window.google.maps.places) {
       setIsApiLoaded(true);
       setIsLoading(false);
+      return;
+    }
+
+    // Check if script is already being loaded
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+      // Script already exists, wait for it to load
+      const checkGoogleLoaded = setInterval(() => {
+        if (window.google && window.google.maps && window.google.maps.places) {
+          clearInterval(checkGoogleLoaded);
+          setIsApiLoaded(true);
+          setIsLoading(false);
+        }
+      }, 100);
       return;
     }
 
     const script = document.createElement('script');
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     
-    if (!apiKey) {
-      setError('Google Maps API key is not configured');
+    if (!apiKey || apiKey === 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+      setError('Google Maps API key is not configured. Please add your API key to environment variables.');
       setIsLoading(false);
       return;
     }
 
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMaps`;
+    const callbackName = 'initGoogleMaps' + Date.now();
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=${callbackName}`;
     script.async = true;
     script.defer = true;
 
-    window.initGoogleMaps = () => {
+    window[callbackName as any] = () => {
       setIsApiLoaded(true);
       setIsLoading(false);
+      delete window[callbackName as any];
     };
 
     script.onerror = () => {
-      setError('Failed to load Google Maps API');
+      setError('Failed to load Google Maps API. Please check your API key and internet connection.');
       setIsLoading(false);
     };
 
