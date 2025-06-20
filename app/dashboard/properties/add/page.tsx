@@ -98,8 +98,11 @@ export default function AddPropertyPage() {
   useEffect(() => {
     if (typeof window !== 'undefined' && !window.google) {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      console.log('Loading Google Maps with API key:', apiKey ? 'Present' : 'Missing');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
       script.async = true;
+      script.defer = true;
       document.head.appendChild(script);
     }
   }, []);

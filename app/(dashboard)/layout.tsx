@@ -19,7 +19,7 @@ export default function DashboardLayout({
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const mobileNavRef = useRef<{ openMenu: () => void }>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -109,7 +109,7 @@ export default function DashboardLayout({
         {/* Header */}
         <Header
           onMenuClick={() => {
-            mobileNavRef.current?.openMenu();
+            setMobileMenuOpen(true);
           }}
           showMobileMenu={true}
         />
@@ -122,8 +122,8 @@ export default function DashboardLayout({
         </main>
       </div>
 
-      {/* Mobile Navigation - Hidden, controlled by Header */}
-      <MobileNav ref={mobileNavRef} />
+      {/* Mobile Navigation */}
+      <MobileNav open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} />
 
       {/* Toast Notifications */}
       <Toaster />

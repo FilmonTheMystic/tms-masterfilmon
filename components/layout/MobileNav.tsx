@@ -2,7 +2,7 @@
 
 // components/layout/MobileNav.tsx - Mobile navigation component
 
-import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -38,10 +38,8 @@ import { useToast } from '@/lib/hooks/use-toast';
 
 interface MobileNavProps {
   children?: React.ReactNode;
-}
-
-interface MobileNavRef {
-  openMenu: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const navigationItems = [
@@ -127,17 +125,15 @@ const quickActions = [
   },
 ];
 
-export const MobileNav = forwardRef<MobileNavRef, MobileNavProps>(
-  ({ children }, ref) => {
-    const pathname = usePathname();
-    const [open, setOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [expandedItems, setExpandedItems] = useState<string[]>([]);
-    const { toast } = useToast();
+export function MobileNav({ children, open = false, onOpenChange }: MobileNavProps) {
+  const pathname = usePathname();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const { toast } = useToast();
 
-    useImperativeHandle(ref, () => ({
-      openMenu: () => setOpen(true),
-    }));
+  const setOpen = (isOpen: boolean) => {
+    onOpenChange?.(isOpen);
+  };
 
   const toggleExpanded = (href: string) => {
     setExpandedItems(prev =>
@@ -382,6 +378,4 @@ export const MobileNav = forwardRef<MobileNavRef, MobileNavProps>(
       </SheetContent>
     </Sheet>
   );
-});
-
-MobileNav.displayName = 'MobileNav';
+}
