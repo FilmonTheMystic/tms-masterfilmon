@@ -29,7 +29,12 @@ import { propertySchema, type PropertyFormData } from '@/lib/validations/schemas
 import { propertyService } from '@/lib/firebase/db';
 import { authService } from '@/lib/firebase/auth';
 import { useToast } from '@/lib/hooks/use-toast';
-import { GooglePlacesAutocomplete } from '@/components/shared/GooglePlacesAutocomplete';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 export default function AddPropertyPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -57,22 +62,15 @@ export default function AddPropertyPage() {
     },
   });
 
-  // Handle Google Places autocomplete selection
-  const handlePlaceSelect = (placeDetails: any) => {
-    // Auto-fill the address fields based on selected place
-    if (placeDetails.address) {
-      form.setValue('address', placeDetails.address);
+  // Load Google Maps Places API
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.google) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDoQRXTSMoa_Gy3NauwarlBMvmApE3nMfY&libraries=places`;
+      script.async = true;
+      document.head.appendChild(script);
     }
-    if (placeDetails.city) {
-      form.setValue('city', placeDetails.city);
-    }
-    if (placeDetails.province) {
-      form.setValue('province', placeDetails.province);
-    }
-    if (placeDetails.postalCode) {
-      form.setValue('postalCode', placeDetails.postalCode);
-    }
-  };
+  }, []);
 
   const onSubmit = async (data: PropertyFormData) => {
     setIsLoading(true);
@@ -214,12 +212,35 @@ export default function AddPropertyPage() {
                       <FormItem>
                         <FormLabel>Street Address</FormLabel>
                         <FormControl>
-                          <GooglePlacesAutocomplete
-                            value={field.value}
-                            onChange={field.onChange}
-                            onPlaceSelect={handlePlaceSelect}
+                          <Input 
                             placeholder="Start typing an address (e.g., 123 Main Street, Cape Town)"
-                            disabled={isLoading}
+                            {...field}
+                            id="address-autocomplete"
+                            ref={(el) => {
+                              if (el && typeof window !== 'undefined') {
+                                const initAutocomplete = () => {
+                                  if (window.google && window.google.maps && window.google.maps.places) {
+                                    const autocomplete = new window.google.maps.places.Autocomplete(el, {
+                                      componentRestrictions: { country: 'ZA' },
+                                      types: ['address']
+                                    });
+                                    
+                                    autocomplete.addListener('place_changed', () => {
+                                      const place = autocomplete.getPlace();
+                                      if (place.formatted_address) {
+                                        field.onChange(place.formatted_address);
+                                      }
+                                    });
+                                  }
+                                };
+                                
+                                if (window.google) {
+                                  initAutocomplete();
+                                } else {
+                                  setTimeout(initAutocomplete, 1000);
+                                }
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
