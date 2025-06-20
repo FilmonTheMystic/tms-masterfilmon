@@ -109,6 +109,7 @@ export default function DashboardLayout({
         {/* Header */}
         <Header
           onMenuClick={() => {
+            console.log('Setting mobile menu open to true');
             setMobileMenuOpen(true);
           }}
           showMobileMenu={true}
