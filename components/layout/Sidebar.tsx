@@ -30,6 +30,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Layers,
+  LayoutDashboard,
 } from 'lucide-react';
 import { authService } from '@/lib/firebase/auth';
 import { useToast } from '@/lib/hooks/use-toast';
@@ -43,7 +44,7 @@ const navigationItems = [
   {
     title: 'Dashboard',
     href: '/dashboard',
-    icon: Home,
+    icon: LayoutDashboard,
     badge: null,
   },
   {
@@ -55,7 +56,7 @@ const navigationItems = [
   {
     title: 'Units',
     href: '/dashboard/units',
-    icon: Layers,
+    icon: Home,
     badge: null,
   },
   {
@@ -191,23 +192,6 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
         )}
       </div>
 
-      {/* Quick Actions */}
-      {!isCollapsed && (
-        <div className="p-4 space-y-2">
-          <Button className="w-full justify-start" size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Generate Invoice
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              <Search className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="sm" className="flex-1">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
 
       <Separator />
 

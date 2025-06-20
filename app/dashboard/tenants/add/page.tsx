@@ -267,17 +267,20 @@ export default function AddTenantPage() {
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium">Property & Unit</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div className="space-y-2 md:col-span-3">
                       <label className="text-sm font-medium">Property</label>
                       <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a property" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-w-[400px]">
                           {properties.map((property) => (
-                            <SelectItem key={property.id} value={property.id}>
-                              {property.name} - {property.city}
+                            <SelectItem key={property.id} value={property.id} className="max-w-[380px]">
+                              <div className="truncate">
+                                <span className="font-medium">{property.name}</span>
+                                <span className="text-muted-foreground text-sm ml-2">- {property.city}</span>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -288,7 +291,7 @@ export default function AddTenantPage() {
                       control={form.control}
                       name="unitId"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="md:col-span-2">
                           <FormLabel>Unit</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPropertyId}>
                             <FormControl>

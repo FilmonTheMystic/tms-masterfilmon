@@ -124,8 +124,9 @@ class PropertyService extends FirestoreService<Property> {
     if (existingUnits.length === 0) {
       await this.createTemplateUnits(propertyId, totalUnits);
     } else {
-      // Fix existing units that have 'A' suffix
+      // Fix existing units that have 'A' suffix and ensure sequential numbering
       await this.fixUnitNumbers(existingUnits);
+      await this.ensureSequentialNumbering(propertyId, totalUnits);
     }
   }
 
@@ -139,6 +140,36 @@ class PropertyService extends FirestoreService<Property> {
     
     if (updatePromises.length > 0) {
       await Promise.all(updatePromises);
+    }
+  }
+
+  private async ensureSequentialNumbering(propertyId: string, totalUnits: number): Promise<void> {
+    const existingUnits = await unitQueries.getByPropertyId(propertyId);
+    
+    // If we have fewer units than totalUnits, create the missing ones
+    if (existingUnits.length < totalUnits) {
+      const existingNumbers = existingUnits.map(unit => parseInt(unit.unitNumber) || 0);
+      const maxNumber = Math.max(...existingNumbers, 0);
+      
+      const missingUnits = [];
+      for (let i = 1; i <= totalUnits; i++) {
+        if (!existingNumbers.includes(i)) {
+          missingUnits.push({
+            propertyId,
+            unitNumber: `${i}`,
+            type: '1bed' as const,
+            size: 50,
+            baseRent: 0,
+            deposit: 0,
+            isOccupied: false,
+          });
+        }
+      }
+      
+      const createPromises = missingUnits.map(unitData => unitService.create(unitData));
+      if (createPromises.length > 0) {
+        await Promise.all(createPromises);
+      }
     }
   }
 }
