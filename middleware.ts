@@ -15,12 +15,8 @@ export function middleware(request: NextRequest) {
       url.pathname = '/admin/login';
       return NextResponse.redirect(url);
     }
-    // If accessing /admin root, redirect to /admin/login for proper authentication flow
-    if (pathname === '/admin') {
-      const url = request.nextUrl.clone();
-      url.pathname = '/admin/login';
-      return NextResponse.redirect(url);
-    }
+    // Don't redirect /admin if user is authenticated
+    // The admin layout will handle authentication
   }
   
   // Handle main domain routing  
