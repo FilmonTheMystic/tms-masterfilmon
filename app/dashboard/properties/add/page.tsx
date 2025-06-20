@@ -62,6 +62,38 @@ export default function AddPropertyPage() {
     },
   });
 
+  // Auto-populate address fields from Google Places
+  const handleAddressSelect = (place: any) => {
+    if (!place.address_components) return;
+
+    let streetAddress = '';
+    let city = '';
+    let province = '';
+    let postalCode = '';
+
+    place.address_components.forEach((component: any) => {
+      const types = component.types;
+      
+      if (types.includes('street_number')) {
+        streetAddress = component.long_name + ' ';
+      } else if (types.includes('route')) {
+        streetAddress += component.long_name;
+      } else if (types.includes('locality') || types.includes('administrative_area_level_2')) {
+        city = component.long_name;
+      } else if (types.includes('administrative_area_level_1')) {
+        province = component.long_name;
+      } else if (types.includes('postal_code')) {
+        postalCode = component.long_name;
+      }
+    });
+
+    // Update form fields
+    if (streetAddress.trim()) form.setValue('address', streetAddress.trim());
+    if (city) form.setValue('city', city);
+    if (province) form.setValue('province', province);
+    if (postalCode) form.setValue('postalCode', postalCode);
+  };
+
   // Load Google Maps Places API
   useEffect(() => {
     if (typeof window !== 'undefined' && !window.google) {
@@ -229,6 +261,7 @@ export default function AddPropertyPage() {
                                       const place = autocomplete.getPlace();
                                       if (place.formatted_address) {
                                         field.onChange(place.formatted_address);
+                                        handleAddressSelect(place);
                                       }
                                     });
                                   }

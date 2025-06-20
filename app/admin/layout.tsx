@@ -152,14 +152,6 @@ function AdminSidebar() {
         })}
       </nav>
       
-      <div className="p-4 border-t border-gray-200 mt-auto">
-        <Link href="/dashboard">
-          <Button variant="outline" size="sm" className="w-full">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Main App
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 }
