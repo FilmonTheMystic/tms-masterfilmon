@@ -305,14 +305,16 @@ export const unitQueries = {
   async getByPropertyId(propertyId: string): Promise<Unit[]> {
     const q = query(
       collection(db, 'units'),
-      where('propertyId', '==', propertyId),
-      orderBy('unitNumber')
+      where('propertyId', '==', propertyId)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const units = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
     })) as Unit[];
+    
+    // Sort manually to avoid index requirement
+    return units.sort((a, b) => a.unitNumber.localeCompare(b.unitNumber));
   },
 
   async getVacantUnits(propertyId?: string): Promise<Unit[]> {
