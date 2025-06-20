@@ -205,7 +205,10 @@ export function Header({ onMenuClick, showMobileMenu = false }: HeaderProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={onMenuClick}
+            onClick={() => {
+              console.log('Mobile menu clicked!');
+              onMenuClick();
+            }}
             className="lg:hidden"
           >
             <Menu className="h-4 w-4" />

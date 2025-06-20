@@ -16,6 +16,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -63,7 +64,7 @@ export default function DashboardLayout({
 
   // Close mobile menu on route change
   useEffect(() => {
-    // Mobile menu logic will be handled by MobileNav component
+    setMobileNavOpen(false);
   }, [pathname]);
 
   // Don't render anything until mounted (prevents hydration mismatch)
@@ -107,9 +108,7 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <Header
-          onMenuClick={() => {
-            // Mobile menu toggle will be handled by Header component
-          }}
+          onMenuClick={() => setMobileNavOpen(true)}
           showMobileMenu={true}
         />
 
@@ -122,7 +121,10 @@ export default function DashboardLayout({
       </div>
 
       {/* Mobile Navigation */}
-      <MobileNav />
+      <MobileNav 
+        open={mobileNavOpen}
+        onOpenChange={setMobileNavOpen}
+      />
 
       {/* Toast Notifications */}
       <Toaster />
