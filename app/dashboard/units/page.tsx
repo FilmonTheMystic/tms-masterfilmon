@@ -15,7 +15,8 @@ import {
   Building2,
   Edit,
   Trash2,
-  Plus
+  Plus,
+  Receipt
 } from 'lucide-react';
 import Link from 'next/link';
 import { unitService, propertyService, tenantQueries } from '@/lib/firebase/db';
@@ -381,18 +382,38 @@ function UnitCard({ unit, onUpdate }: UnitCardProps) {
 
           <div className="flex gap-2 pt-2">
             {!unit.isOccupied ? (
-              <Button variant="outline" size="sm" className="flex-1">
-                <Users className="h-3 w-3 mr-1" />
-                Add Tenant
-              </Button>
+              <Link href={`/dashboard/tenants/add?unitId=${unit.id}&propertyId=${unit.propertyId}`} className="flex-1">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Users className="h-3 w-3 mr-1" />
+                  Add Tenant
+                </Button>
+              </Link>
             ) : (
-              <Button variant="outline" size="sm" className="flex-1">
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+                toast({
+                  title: 'View Tenant',
+                  description: 'Tenant view functionality coming soon.',
+                });
+              }}>
                 <Users className="h-3 w-3 mr-1" />
                 View Tenant
               </Button>
             )}
-            <Button variant="outline" size="sm" className="flex-1">
-              <DollarSign className="h-3 w-3 mr-1" />
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+              if (!unit.isOccupied) {
+                toast({
+                  title: 'No Tenant',
+                  description: 'Add a tenant to this unit before generating an invoice.',
+                  variant: 'destructive',
+                });
+              } else {
+                toast({
+                  title: 'Generate Invoice',
+                  description: 'Invoice generation functionality coming soon.',
+                });
+              }
+            }}>
+              <Receipt className="h-3 w-3 mr-1" />
               Generate Invoice
             </Button>
           </div>

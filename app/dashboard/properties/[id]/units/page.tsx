@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Building2, 
   ArrowLeft,
@@ -15,7 +18,8 @@ import {
   DollarSign,
   Search,
   Edit,
-  Trash2
+  Trash2,
+  Receipt
 } from 'lucide-react';
 import Link from 'next/link';
 import { propertyService, unitService, unitQueries, tenantQueries } from '@/lib/firebase/db';
@@ -35,6 +39,15 @@ export default function PropertyUnitsPage() {
   const [units, setUnits] = useState<UnitWithTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [addUnitDialogOpen, setAddUnitDialogOpen] = useState(false);
+  const [addingUnit, setAddingUnit] = useState(false);
+  const [newUnitForm, setNewUnitForm] = useState({
+    unitNumber: '',
+    type: '1bed' as const,
+    size: 50,
+    baseRent: 0,
+    deposit: 0
+  });
 
   useEffect(() => {
     if (params.id) {
@@ -88,6 +101,54 @@ export default function PropertyUnitsPage() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddUnit = async () => {
+    if (!property || !newUnitForm.unitNumber.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setAddingUnit(true);
+    try {
+      await unitService.create({
+        propertyId: property.id,
+        unitNumber: newUnitForm.unitNumber,
+        type: newUnitForm.type,
+        size: newUnitForm.size,
+        baseRent: newUnitForm.baseRent,
+        deposit: newUnitForm.deposit,
+        isOccupied: false,
+      });
+
+      toast({
+        title: 'Unit added',
+        description: 'New unit has been added successfully.',
+      });
+
+      setAddUnitDialogOpen(false);
+      setNewUnitForm({
+        unitNumber: '',
+        type: '1bed',
+        size: 50,
+        baseRent: 0,
+        deposit: 0
+      });
+      loadUnits();
+    } catch (error) {
+      console.error('Failed to add unit:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add unit. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setAddingUnit(false);
     }
   };
 
@@ -162,10 +223,91 @@ export default function PropertyUnitsPage() {
             <span>Units</span>
           </nav>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Unit
-        </Button>
+        <Dialog open={addUnitDialogOpen} onOpenChange={setAddUnitDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Unit
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Unit</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="unitNumber">Unit Number</Label>
+                <Input
+                  id="unitNumber"
+                  value={newUnitForm.unitNumber}
+                  onChange={(e) => setNewUnitForm(prev => ({ ...prev, unitNumber: e.target.value }))}
+                  placeholder="Enter unit number"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="type">Unit Type</Label>
+                <Select value={newUnitForm.type} onValueChange={(value: any) => setNewUnitForm(prev => ({ ...prev, type: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select unit type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="studio">Studio</SelectItem>
+                    <SelectItem value="1bed">1 Bedroom</SelectItem>
+                    <SelectItem value="2bed">2 Bedroom</SelectItem>
+                    <SelectItem value="3bed">3 Bedroom</SelectItem>
+                    <SelectItem value="commercial">Commercial</SelectItem>
+                    <SelectItem value="parking">Parking</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="size">Size (sqm)</Label>
+                  <Input
+                    id="size"
+                    type="number"
+                    value={newUnitForm.size}
+                    onChange={(e) => setNewUnitForm(prev => ({ ...prev, size: parseInt(e.target.value) || 0 }))}
+                    min="1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="baseRent">Base Rent (ZAR)</Label>
+                  <Input
+                    id="baseRent"
+                    type="number"
+                    value={newUnitForm.baseRent}
+                    onChange={(e) => setNewUnitForm(prev => ({ ...prev, baseRent: parseInt(e.target.value) || 0 }))}
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="deposit">Deposit (ZAR)</Label>
+                <Input
+                  id="deposit"
+                  type="number"
+                  value={newUnitForm.deposit}
+                  onChange={(e) => setNewUnitForm(prev => ({ ...prev, deposit: parseInt(e.target.value) || 0 }))}
+                  min="0"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setAddUnitDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddUnit} disabled={addingUnit}>
+                  {addingUnit ? 'Adding...' : 'Add Unit'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats Cards */}
@@ -285,6 +427,15 @@ interface UnitCardProps {
 function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
   const { toast } = useToast();
   const [deleting, setDeleting] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    unitNumber: unit.unitNumber,
+    type: unit.type,
+    size: unit.size,
+    baseRent: unit.baseRent,
+    deposit: unit.deposit
+  });
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this unit? This action cannot be undone.')) {
@@ -311,6 +462,36 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
     }
   };
 
+  const handleEdit = async () => {
+    setEditing(true);
+    try {
+      await unitService.update(unit.id, {
+        unitNumber: editForm.unitNumber,
+        type: editForm.type,
+        size: editForm.size,
+        baseRent: editForm.baseRent,
+        deposit: editForm.deposit
+      });
+
+      toast({
+        title: 'Unit updated',
+        description: 'Unit has been updated successfully.',
+      });
+
+      setEditDialogOpen(false);
+      onUpdate();
+    } catch (error) {
+      console.error('Failed to update unit:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update unit. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setEditing(false);
+    }
+  };
+
   const getUnitStatus = (unit: UnitWithTenant) => {
     if (unit.isOccupied && unit.tenant) {
       return { status: 'occupied', text: 'Occupied', color: 'bg-blue-100 text-blue-800' };
@@ -332,9 +513,90 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
             </Badge>
           </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="sm">
-              <Edit className="h-3 w-3" />
-            </Button>
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Edit className="h-3 w-3" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Unit {unit.unitNumber}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="editUnitNumber">Unit Number</Label>
+                    <Input
+                      id="editUnitNumber"
+                      value={editForm.unitNumber}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, unitNumber: e.target.value }))}
+                      placeholder="Enter unit number"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="editType">Unit Type</Label>
+                    <Select value={editForm.type} onValueChange={(value: any) => setEditForm(prev => ({ ...prev, type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select unit type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="studio">Studio</SelectItem>
+                        <SelectItem value="1bed">1 Bedroom</SelectItem>
+                        <SelectItem value="2bed">2 Bedroom</SelectItem>
+                        <SelectItem value="3bed">3 Bedroom</SelectItem>
+                        <SelectItem value="commercial">Commercial</SelectItem>
+                        <SelectItem value="parking">Parking</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="editSize">Size (sqm)</Label>
+                      <Input
+                        id="editSize"
+                        type="number"
+                        value={editForm.size}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, size: parseInt(e.target.value) || 0 }))}
+                        min="1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editBaseRent">Base Rent (ZAR)</Label>
+                      <Input
+                        id="editBaseRent"
+                        type="number"
+                        value={editForm.baseRent}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, baseRent: parseInt(e.target.value) || 0 }))}
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="editDeposit">Deposit (ZAR)</Label>
+                    <Input
+                      id="editDeposit"
+                      type="number"
+                      value={editForm.deposit}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, deposit: parseInt(e.target.value) || 0 }))}
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleEdit} disabled={editing}>
+                      {editing ? 'Updating...' : 'Update Unit'}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button 
               variant="ghost" 
               size="sm" 
@@ -385,18 +647,38 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
 
           <div className="flex gap-2 pt-2">
             {!unit.isOccupied ? (
-              <Button variant="outline" size="sm" className="flex-1">
-                <Users className="h-3 w-3 mr-1" />
-                Add Tenant
-              </Button>
+              <Link href={`/dashboard/tenants/add?unitId=${unit.id}&propertyId=${propertyId}`} className="flex-1">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Users className="h-3 w-3 mr-1" />
+                  Add Tenant
+                </Button>
+              </Link>
             ) : (
-              <Button variant="outline" size="sm" className="flex-1">
+              <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+                toast({
+                  title: 'View Tenant',
+                  description: 'Tenant view functionality coming soon.',
+                });
+              }}>
                 <Users className="h-3 w-3 mr-1" />
                 View Tenant
               </Button>
             )}
-            <Button variant="outline" size="sm" className="flex-1">
-              <DollarSign className="h-3 w-3 mr-1" />
+            <Button variant="outline" size="sm" className="flex-1" onClick={() => {
+              if (!unit.isOccupied) {
+                toast({
+                  title: 'No Tenant',
+                  description: 'Add a tenant to this unit before generating an invoice.',
+                  variant: 'destructive',
+                });
+              } else {
+                toast({
+                  title: 'Generate Invoice',
+                  description: 'Invoice generation functionality coming soon.',
+                });
+              }
+            }}>
+              <Receipt className="h-3 w-3 mr-1" />
               Generate Invoice
             </Button>
           </div>

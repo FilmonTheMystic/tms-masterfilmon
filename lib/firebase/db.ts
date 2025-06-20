@@ -123,6 +123,22 @@ class PropertyService extends FirestoreService<Property> {
     const existingUnits = await unitQueries.getByPropertyId(propertyId);
     if (existingUnits.length === 0) {
       await this.createTemplateUnits(propertyId, totalUnits);
+    } else {
+      // Fix existing units that have 'A' suffix
+      await this.fixUnitNumbers(existingUnits);
+    }
+  }
+
+  private async fixUnitNumbers(units: Unit[]): Promise<void> {
+    const updatePromises = units
+      .filter(unit => unit.unitNumber.endsWith('A'))
+      .map(unit => {
+        const newUnitNumber = unit.unitNumber.replace('A', '');
+        return unitService.update(unit.id, { unitNumber: newUnitNumber });
+      });
+    
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
     }
   }
 }

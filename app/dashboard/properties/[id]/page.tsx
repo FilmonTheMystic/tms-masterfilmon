@@ -93,7 +93,11 @@ export default function PropertyDetailPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">{property.name}</h1>
-          <p className="text-muted-foreground">Property details and management</p>
+          <nav className="text-sm text-muted-foreground">
+            <Link href="/dashboard/properties" className="hover:text-primary">Properties</Link>
+            <span className="mx-2">/</span>
+            <span>{property.name}</span>
+          </nav>
         </div>
         <Link href={`/dashboard/properties/${property.id}/edit`}>
           <Button>

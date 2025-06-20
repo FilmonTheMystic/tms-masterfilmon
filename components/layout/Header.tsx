@@ -222,8 +222,8 @@ export function Header({ onMenuClick, showMobileMenu = false }: HeaderProps) {
             {getPageTitle()}
           </h1>
           
-          {/* Breadcrumb for deeper pages */}
-          {pathname.split('/').length > 3 && (
+          {/* Breadcrumb for deeper pages (skip property pages as they have custom breadcrumbs) */}
+          {pathname.split('/').length > 3 && !pathname.includes('/properties/') && (
             <nav className="text-sm text-muted-foreground">
               <span>/</span>
               <span className="ml-1 capitalize">
