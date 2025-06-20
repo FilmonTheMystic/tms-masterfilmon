@@ -104,7 +104,7 @@ class PropertyService extends FirestoreService<Property> {
     for (let i = 1; i <= totalUnits; i++) {
       const unitData = {
         propertyId,
-        unitNumber: `${i}A`, // Default naming convention
+        unitNumber: `${i}`, // Simple numeric naming
         type: '1bed' as const,
         size: 50, // Default 50 sqm
         baseRent: 0, // To be set later

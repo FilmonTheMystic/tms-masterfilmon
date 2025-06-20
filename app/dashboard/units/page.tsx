@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { unitService, propertyService, tenantQueries } from '@/lib/firebase/db';
 import type { Unit, Property, Tenant } from '@/types';
 import { useToast } from '@/lib/hooks/use-toast';
+import { formatCurrency } from '@/lib/utils';
 
 interface UnitWithDetails extends Unit {
   property?: Property;
@@ -183,7 +184,7 @@ export default function UnitsPage() {
               <DollarSign className="h-4 w-4 text-purple-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  ${units.reduce((sum, unit) => sum + (unit.baseRent || 0), 0).toLocaleString()}
+                  {formatCurrency(units.reduce((sum, unit) => sum + (unit.baseRent || 0), 0))}
                 </p>
                 <p className="text-sm text-muted-foreground">Total Rent</p>
               </div>
@@ -358,14 +359,14 @@ function UnitCard({ unit, onUpdate }: UnitCardProps) {
           <div className="text-sm">
             <span className="text-muted-foreground">Base Rent:</span>
             <span className="ml-1 font-medium text-lg">
-              ${unit.baseRent ? unit.baseRent.toLocaleString() : '0'}/month
+              {formatCurrency(unit.baseRent || 0)}/month
             </span>
           </div>
 
           {unit.deposit > 0 && (
             <div className="text-sm">
               <span className="text-muted-foreground">Deposit:</span>
-              <span className="ml-1 font-medium">${unit.deposit.toLocaleString()}</span>
+              <span className="ml-1 font-medium">{formatCurrency(unit.deposit)}</span>
             </div>
           )}
 

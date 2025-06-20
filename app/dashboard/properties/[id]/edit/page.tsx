@@ -162,7 +162,13 @@ export default function EditPropertyPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">Edit Property</h1>
-          <p className="text-muted-foreground">Update property information</p>
+          <nav className="text-sm text-muted-foreground">
+            <Link href="/dashboard/properties" className="hover:text-primary">Properties</Link>
+            <span className="mx-2">/</span>
+            <Link href={`/dashboard/properties/${property.id}`} className="hover:text-primary">{property.name}</Link>
+            <span className="mx-2">/</span>
+            <span>Edit</span>
+          </nav>
         </div>
       </div>
 

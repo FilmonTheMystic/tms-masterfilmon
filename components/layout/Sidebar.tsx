@@ -29,6 +29,7 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Layers,
 } from 'lucide-react';
 import { authService } from '@/lib/firebase/auth';
 import { useToast } from '@/lib/hooks/use-toast';
@@ -54,7 +55,7 @@ const navigationItems = [
   {
     title: 'Units',
     href: '/dashboard/units',
-    icon: Home,
+    icon: Layers,
     badge: null,
   },
   {

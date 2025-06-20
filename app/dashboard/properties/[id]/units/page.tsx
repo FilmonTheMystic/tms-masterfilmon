@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { propertyService, unitService, unitQueries, tenantQueries } from '@/lib/firebase/db';
 import type { Property, Unit, Tenant } from '@/types';
 import { useToast } from '@/lib/hooks/use-toast';
+import { formatCurrency } from '@/lib/utils';
 
 interface UnitWithTenant extends Unit {
   tenant?: Tenant;
@@ -153,7 +154,13 @@ export default function PropertyUnitsPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">Manage Units</h1>
-          <p className="text-muted-foreground">{property.name} - {units.length} units</p>
+          <nav className="text-sm text-muted-foreground">
+            <Link href="/dashboard/properties" className="hover:text-primary">Properties</Link>
+            <span className="mx-2">/</span>
+            <Link href={`/dashboard/properties/${property.id}`} className="hover:text-primary">{property.name}</Link>
+            <span className="mx-2">/</span>
+            <span>Units</span>
+          </nav>
         </div>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
@@ -209,7 +216,7 @@ export default function PropertyUnitsPage() {
               <DollarSign className="h-4 w-4 text-purple-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  ${units.reduce((sum, unit) => sum + (unit.baseRent || 0), 0).toLocaleString()}
+                  {formatCurrency(units.reduce((sum, unit) => sum + (unit.baseRent || 0), 0))}
                 </p>
                 <p className="text-sm text-muted-foreground">Total Rent</p>
               </div>
@@ -304,6 +311,14 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
     }
   };
 
+  const getUnitStatus = (unit: UnitWithTenant) => {
+    if (unit.isOccupied && unit.tenant) {
+      return { status: 'occupied', text: 'Occupied', color: 'bg-blue-100 text-blue-800' };
+    } else {
+      return { status: 'available', text: 'Available', color: 'bg-green-100 text-green-800' };
+    }
+  };
+
   const unitStatus = getUnitStatus(unit);
 
   return (
@@ -348,14 +363,14 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
           <div className="text-sm">
             <span className="text-muted-foreground">Base Rent:</span>
             <span className="ml-1 font-medium text-lg">
-              ${unit.baseRent ? unit.baseRent.toLocaleString() : '0'}/month
+              {formatCurrency(unit.baseRent || 0)}/month
             </span>
           </div>
 
           {unit.deposit > 0 && (
             <div className="text-sm">
               <span className="text-muted-foreground">Deposit:</span>
-              <span className="ml-1 font-medium">${unit.deposit.toLocaleString()}</span>
+              <span className="ml-1 font-medium">{formatCurrency(unit.deposit)}</span>
             </div>
           )}
 
