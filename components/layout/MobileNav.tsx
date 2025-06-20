@@ -188,21 +188,12 @@ export function MobileNav({ children, open = false, onOpenChange }: MobileNavPro
       <SheetContent side="left" className="w-80 p-0">
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-primary" />
-              <div>
-                <h1 className="text-base font-bold text-primary">TMS</h1>
-                <p className="text-xs text-muted-foreground">Tenant Management</p>
-              </div>
+          <div className="flex items-center gap-2 p-4 border-b">
+            <Building2 className="h-6 w-6 text-primary" />
+            <div>
+              <h1 className="text-base font-bold text-primary">TMS</h1>
+              <p className="text-xs text-muted-foreground">Tenant Management</p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setOpen(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </div>
 
           {/* Search */}

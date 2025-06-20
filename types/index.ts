@@ -18,7 +18,7 @@ export interface Property {
   province: string;
   managerId: string;
   totalUnits: number;
-  propertyType: 'residential' | 'commercial' | 'mixed';
+  propertyType: 'apartment' | 'house' | 'condo' | 'townhouse' | 'commercial';
   bankDetails: BankDetails;
   createdAt: Date;
   updatedAt: Date;
@@ -69,7 +69,7 @@ export interface BankDetails {
   accountName: string;
   accountNumber: string;
   branchCode: string;
-  accountType: 'current' | 'savings';
+  accountType: 'Checking' | 'Savings' | 'Business';
 }
 
 export interface Charge {

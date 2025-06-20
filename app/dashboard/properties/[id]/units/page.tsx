@@ -18,20 +18,12 @@ import {
   Trash2
 } from 'lucide-react';
 import Link from 'next/link';
-import { propertyService } from '@/lib/firebase/db';
-import type { Property } from '@/types';
+import { propertyService, unitService, unitQueries, tenantQueries } from '@/lib/firebase/db';
+import type { Property, Unit, Tenant } from '@/types';
 import { useToast } from '@/lib/hooks/use-toast';
 
-interface Unit {
-  id: string;
-  unitNumber: string;
-  bedrooms: number;
-  bathrooms: number;
-  squareFeet?: number;
-  rentAmount: number;
-  status: 'available' | 'occupied' | 'maintenance';
-  tenantId?: string;
-  tenantName?: string;
+interface UnitWithTenant extends Unit {
+  tenant?: Tenant;
 }
 
 export default function PropertyUnitsPage() {
@@ -39,7 +31,7 @@ export default function PropertyUnitsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [property, setProperty] = useState<Property | null>(null);
-  const [units, setUnits] = useState<Unit[]>([]);
+  const [units, setUnits] = useState<UnitWithTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -55,6 +47,8 @@ export default function PropertyUnitsPage() {
       const data = await propertyService.getById(params.id as string);
       if (data) {
         setProperty(data);
+        // Create units if they don't exist for existing properties
+        await propertyService.createUnitsForExistingProperty(data.id, data.totalUnits);
       } else {
         router.push('/dashboard/properties');
       }
@@ -67,19 +61,23 @@ export default function PropertyUnitsPage() {
   const loadUnits = async () => {
     try {
       setLoading(true);
-      // Mock data for now - replace with actual API call
-      const mockUnits: Unit[] = Array.from({ length: property?.totalUnits || 5 }, (_, index) => ({
-        id: `unit-${index + 1}`,
-        unitNumber: `${index + 1}A`,
-        bedrooms: Math.floor(Math.random() * 3) + 1,
-        bathrooms: Math.floor(Math.random() * 2) + 1,
-        squareFeet: 800 + Math.floor(Math.random() * 400),
-        rentAmount: 1200 + Math.floor(Math.random() * 800),
-        status: ['available', 'occupied', 'maintenance'][Math.floor(Math.random() * 3)] as any,
-        tenantName: Math.random() > 0.5 ? 'John Doe' : undefined
-      }));
+      if (!params.id) return;
       
-      setUnits(mockUnits);
+      // Load units from database
+      const unitsData = await unitQueries.getByPropertyId(params.id as string);
+      
+      // Load tenant information for each unit
+      const unitsWithTenants = await Promise.all(
+        unitsData.map(async (unit) => {
+          if (unit.isOccupied) {
+            const tenant = await tenantQueries.getByUnitId(unit.id);
+            return { ...unit, tenant };
+          }
+          return { ...unit };
+        })
+      );
+      
+      setUnits(unitsWithTenants);
     } catch (error) {
       console.error('Failed to load units:', error);
       toast({
@@ -94,32 +92,15 @@ export default function PropertyUnitsPage() {
 
   const filteredUnits = units.filter(unit =>
     unit.unitNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    unit.tenantName?.toLowerCase().includes(searchQuery.toLowerCase())
+    unit.tenant?.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    unit.tenant?.lastName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getStatusColor = (status: Unit['status']) => {
-    switch (status) {
-      case 'available':
-        return 'bg-green-100 text-green-800';
-      case 'occupied':
-        return 'bg-blue-100 text-blue-800';
-      case 'maintenance':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: Unit['status']) => {
-    switch (status) {
-      case 'available':
-        return 'Available';
-      case 'occupied':
-        return 'Occupied';
-      case 'maintenance':
-        return 'Maintenance';
-      default:
-        return 'Unknown';
+  const getUnitStatus = (unit: UnitWithTenant) => {
+    if (unit.isOccupied && unit.tenant) {
+      return { status: 'occupied', text: 'Occupied', color: 'bg-blue-100 text-blue-800' };
+    } else {
+      return { status: 'available', text: 'Available', color: 'bg-green-100 text-green-800' };
     }
   };
 
@@ -200,7 +181,7 @@ export default function PropertyUnitsPage() {
               <Users className="h-4 w-4 text-green-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  {units.filter(u => u.status === 'occupied').length}
+                  {units.filter(u => u.isOccupied).length}
                 </p>
                 <p className="text-sm text-muted-foreground">Occupied</p>
               </div>
@@ -214,7 +195,7 @@ export default function PropertyUnitsPage() {
               <Home className="h-4 w-4 text-orange-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  {units.filter(u => u.status === 'available').length}
+                  {units.filter(u => !u.isOccupied).length}
                 </p>
                 <p className="text-sm text-muted-foreground">Available</p>
               </div>
@@ -228,7 +209,7 @@ export default function PropertyUnitsPage() {
               <DollarSign className="h-4 w-4 text-purple-600" />
               <div>
                 <p className="text-2xl font-bold">
-                  ${units.reduce((sum, unit) => sum + unit.rentAmount, 0).toLocaleString()}
+                  ${units.reduce((sum, unit) => sum + (unit.baseRent || 0), 0).toLocaleString()}
                 </p>
                 <p className="text-sm text-muted-foreground">Total Rent</p>
               </div>
@@ -289,7 +270,7 @@ export default function PropertyUnitsPage() {
 }
 
 interface UnitCardProps {
-  unit: Unit;
+  unit: UnitWithTenant;
   propertyId: string;
   onUpdate: () => void;
 }
@@ -305,8 +286,7 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
 
     setDeleting(true);
     try {
-      // Mock delete - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await unitService.delete(unit.id);
       onUpdate();
       toast({
         title: 'Unit deleted',
@@ -324,31 +304,7 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
     }
   };
 
-  const getStatusColor = (status: Unit['status']) => {
-    switch (status) {
-      case 'available':
-        return 'bg-green-100 text-green-800';
-      case 'occupied':
-        return 'bg-blue-100 text-blue-800';
-      case 'maintenance':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status: Unit['status']) => {
-    switch (status) {
-      case 'available':
-        return 'Available';
-      case 'occupied':
-        return 'Occupied';
-      case 'maintenance':
-        return 'Maintenance';
-      default:
-        return 'Unknown';
-    }
-  };
+  const unitStatus = getUnitStatus(unit);
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -356,8 +312,8 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg mb-1">Unit {unit.unitNumber}</CardTitle>
-            <Badge className={getStatusColor(unit.status)}>
-              {getStatusText(unit.status)}
+            <Badge className={unitStatus.color}>
+              {unitStatus.text}
             </Badge>
           </div>
           <div className="flex gap-1">
@@ -380,36 +336,40 @@ function UnitCard({ unit, propertyId, onUpdate }: UnitCardProps) {
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
-              <span className="text-muted-foreground">Bedrooms:</span>
-              <span className="ml-1 font-medium">{unit.bedrooms}</span>
+              <span className="text-muted-foreground">Type:</span>
+              <span className="ml-1 font-medium capitalize">{unit.type}</span>
             </div>
             <div>
-              <span className="text-muted-foreground">Bathrooms:</span>
-              <span className="ml-1 font-medium">{unit.bathrooms}</span>
+              <span className="text-muted-foreground">Size:</span>
+              <span className="ml-1 font-medium">{unit.size} sqm</span>
             </div>
           </div>
-          
-          {unit.squareFeet && (
-            <div className="text-sm">
-              <span className="text-muted-foreground">Size:</span>
-              <span className="ml-1 font-medium">{unit.squareFeet} sq ft</span>
-            </div>
-          )}
           
           <div className="text-sm">
-            <span className="text-muted-foreground">Rent:</span>
-            <span className="ml-1 font-medium text-lg">${unit.rentAmount.toLocaleString()}/month</span>
+            <span className="text-muted-foreground">Base Rent:</span>
+            <span className="ml-1 font-medium text-lg">
+              ${unit.baseRent ? unit.baseRent.toLocaleString() : '0'}/month
+            </span>
           </div>
 
-          {unit.tenantName && (
+          {unit.deposit > 0 && (
+            <div className="text-sm">
+              <span className="text-muted-foreground">Deposit:</span>
+              <span className="ml-1 font-medium">${unit.deposit.toLocaleString()}</span>
+            </div>
+          )}
+
+          {unit.tenant && (
             <div className="text-sm">
               <span className="text-muted-foreground">Tenant:</span>
-              <span className="ml-1 font-medium">{unit.tenantName}</span>
+              <span className="ml-1 font-medium">
+                {unit.tenant.firstName} {unit.tenant.lastName}
+              </span>
             </div>
           )}
 
           <div className="flex gap-2 pt-2">
-            {unit.status === 'available' ? (
+            {!unit.isOccupied ? (
               <Button variant="outline" size="sm" className="flex-1">
                 <Users className="h-3 w-3 mr-1" />
                 Add Tenant

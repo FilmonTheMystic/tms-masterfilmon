@@ -87,8 +87,48 @@ export class FirestoreService<T extends DocumentData> {
   }
 }
 
+// Enhanced property service with unit creation
+class PropertyService extends FirestoreService<Property> {
+  async create(data: Omit<Property, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    const propertyId = await super.create(data);
+    
+    // Create template units for the property
+    await this.createTemplateUnits(propertyId, data.totalUnits);
+    
+    return propertyId;
+  }
+
+  private async createTemplateUnits(propertyId: string, totalUnits: number): Promise<void> {
+    const unitPromises = [];
+    
+    for (let i = 1; i <= totalUnits; i++) {
+      const unitData = {
+        propertyId,
+        unitNumber: `${i}A`, // Default naming convention
+        type: '1bed' as const,
+        size: 50, // Default 50 sqm
+        baseRent: 0, // To be set later
+        deposit: 0, // To be set later
+        isOccupied: false,
+      };
+      
+      unitPromises.push(unitService.create(unitData));
+    }
+    
+    await Promise.all(unitPromises);
+  }
+
+  async createUnitsForExistingProperty(propertyId: string, totalUnits: number): Promise<void> {
+    // Check if units already exist
+    const existingUnits = await unitQueries.getByPropertyId(propertyId);
+    if (existingUnits.length === 0) {
+      await this.createTemplateUnits(propertyId, totalUnits);
+    }
+  }
+}
+
 // Specialized services for each entity
-export const propertyService = new FirestoreService<Property>('properties');
+export const propertyService = new PropertyService('properties');
 export const tenantService = new FirestoreService<Tenant>('tenants');
 export const invoiceService = new FirestoreService<Invoice>('invoices');
 export const unitService = new FirestoreService<Unit>('units');
