@@ -56,6 +56,12 @@ const navigationItems = [
     badge: null,
   },
   {
+    title: 'Units',
+    href: '/dashboard/units',
+    icon: Home,
+    badge: null,
+  },
+  {
     title: 'Tenants',
     href: '/dashboard/tenants',
     icon: Users,
@@ -98,32 +104,6 @@ const navigationItems = [
   },
 ];
 
-const quickActions = [
-  {
-    title: 'Generate Invoice',
-    href: '/dashboard/invoices/generate',
-    icon: Plus,
-    color: 'bg-blue-500 text-white',
-  },
-  {
-    title: 'Add Tenant',
-    href: '/dashboard/tenants/add',
-    icon: Users,
-    color: 'bg-green-500 text-white',
-  },
-  {
-    title: 'View Reports',
-    href: '/dashboard/reports',
-    icon: BarChart3,
-    color: 'bg-purple-500 text-white',
-  },
-  {
-    title: 'Settings',
-    href: '/dashboard/settings',
-    icon: Settings,
-    color: 'bg-gray-500 text-white',
-  },
-];
 
 export function MobileNav({ children, open = false, onOpenChange }: MobileNavProps) {
   const pathname = usePathname();
@@ -210,38 +190,6 @@ export function MobileNav({ children, open = false, onOpenChange }: MobileNavPro
             </form>
           </div>
 
-          {/* Quick Actions */}
-          <div className="p-4 border-b">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-2 gap-2">
-              {quickActions.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <Link
-                    key={action.href}
-                    href={action.href}
-                    onClick={handleLinkClick}
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full h-auto p-3 flex flex-col items-center gap-2"
-                    >
-                      <div className={cn(
-                        'w-8 h-8 rounded-lg flex items-center justify-center',
-                        action.color
-                      )}>
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <span className="text-xs text-center">{action.title}</span>
-                    </Button>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
 
           {/* Main Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

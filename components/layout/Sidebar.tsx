@@ -52,6 +52,12 @@ const navigationItems = [
     badge: null,
   },
   {
+    title: 'Units',
+    href: '/dashboard/units',
+    icon: Home,
+    badge: null,
+  },
+  {
     title: 'Tenants',
     href: '/dashboard/tenants',
     icon: Users,

@@ -122,6 +122,7 @@ export function Header({ onMenuClick, showMobileMenu = false }: HeaderProps) {
     const titles: Record<string, string> = {
       'dashboard': 'Dashboard',
       'properties': 'Properties',
+      'units': 'Units',
       'tenants': 'Tenants',
       'invoices': 'Invoices',
       'generate': 'Generate Invoice',
