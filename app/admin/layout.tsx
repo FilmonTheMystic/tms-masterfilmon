@@ -5,6 +5,7 @@ import { useAdminAuth } from '@/lib/hooks/useAdminAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ThemeSelector } from '@/components/shared/ThemeSelector';
 import { 
   Shield, 
   AlertTriangle, 
@@ -170,6 +171,7 @@ function AdminHeader() {
         </div>
         
         <div className="flex items-center gap-2">
+          <ThemeSelector />
           {isSuperAdmin && (
             <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">
               Super Admin

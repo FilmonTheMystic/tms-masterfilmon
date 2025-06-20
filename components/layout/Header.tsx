@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { authService } from '@/lib/firebase/auth';
 import { useToast } from '@/lib/hooks/use-toast';
+import { ThemeSelector } from '@/components/shared/ThemeSelector';
 import type { User } from '@/types';
 
 interface HeaderProps {
@@ -254,6 +255,9 @@ export function Header({ onMenuClick, showMobileMenu = false }: HeaderProps) {
         <Button variant="ghost" size="sm" className="lg:hidden">
           <Filter className="h-4 w-4" />
         </Button>
+
+        {/* Theme Selector */}
+        <ThemeSelector />
 
         {/* Notifications */}
         <DropdownMenu>

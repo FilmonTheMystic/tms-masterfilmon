@@ -98,7 +98,7 @@ export default function AddPropertyPage() {
   useEffect(() => {
     if (typeof window !== 'undefined' && !window.google) {
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDoQRXTSMoa_Gy3NauwarlBMvmApE3nMfY&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
       script.async = true;
       document.head.appendChild(script);
     }
