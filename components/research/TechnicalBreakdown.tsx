@@ -22,7 +22,8 @@ import {
   Info,
   Timer,
   Download,
-  BarChart3
+  BarChart3,
+  Settings
 } from 'lucide-react';
 import {
   LineChart,
