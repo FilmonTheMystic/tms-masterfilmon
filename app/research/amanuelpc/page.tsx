@@ -17,8 +17,18 @@ import {
   Settings,
   DollarSign,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  BarChart3,
+  Calculator,
+  Globe
 } from 'lucide-react';
+import { AdvancedCharts } from '@/components/research/AdvancedCharts';
+import { SupplierComparison } from '@/components/research/SupplierComparison';
+import { ImportCalculator } from '@/components/research/ImportCalculator';
+import { TechnicalBreakdown } from '@/components/research/TechnicalBreakdown';
+import { southAfricanSuppliers, chineseSuppliers } from '@/lib/data/suppliers';
+import CN from 'country-flag-icons/react/3x2/CN';
+import ZA from 'country-flag-icons/react/3x2/ZA';
 
 interface Component {
   id: string;
@@ -385,13 +395,16 @@ export default function AmanuelPCPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Suppliers Tracked</p>
-                <p className="text-2xl font-bold text-blue-600">4</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <ZA className="w-5 h-4 rounded-sm border border-gray-200 shadow-sm" />
+                  <p className="text-sm font-medium text-gray-600">SA Suppliers</p>
+                </div>
+                <p className="text-2xl font-bold text-blue-600">{southAfricanSuppliers.length}</p>
               </div>
               <ExternalLink className="h-8 w-8 text-blue-600" />
             </div>
@@ -401,8 +414,22 @@ export default function AmanuelPCPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Components Analyzed</p>
-                <p className="text-2xl font-bold text-green-600">{components.length}</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <CN className="w-5 h-4 rounded-sm border border-gray-200 shadow-sm" />
+                  <p className="text-sm font-medium text-gray-600">China Suppliers</p>
+                </div>
+                <p className="text-2xl font-bold text-red-600">{chineseSuppliers.length}</p>
+              </div>
+              <Globe className="h-8 w-8 text-red-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Suppliers</p>
+                <p className="text-2xl font-bold text-green-600">{southAfricanSuppliers.length + chineseSuppliers.length}</p>
               </div>
               <Settings className="h-8 w-8 text-green-600" />
             </div>
@@ -412,10 +439,10 @@ export default function AmanuelPCPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Price Range</p>
-                <p className="text-xl font-bold text-orange-600">R22k - R59k</p>
+                <p className="text-sm font-medium text-gray-600">Components</p>
+                <p className="text-2xl font-bold text-orange-600">{components.length}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-orange-600" />
+              <MemoryStick className="h-8 w-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
@@ -423,10 +450,21 @@ export default function AmanuelPCPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Assembly Cost</p>
-                <p className="text-xl font-bold text-purple-600">5-8%</p>
+                <p className="text-sm font-medium text-gray-600">Price Range</p>
+                <p className="text-xl font-bold text-purple-600">R22k - R59k</p>
               </div>
-              <AlertCircle className="h-8 w-8 text-purple-600" />
+              <TrendingUp className="h-8 w-8 text-purple-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Import Savings</p>
+                <p className="text-xl font-bold text-yellow-600">20-40%</p>
+              </div>
+              <Calculator className="h-8 w-8 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
@@ -434,11 +472,15 @@ export default function AmanuelPCPage() {
 
       {/* Main Content */}
       <Tabs defaultValue="builds" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="builds">Build Configurations</TabsTrigger>
-          <TabsTrigger value="components">Component Analysis</TabsTrigger>
-          <TabsTrigger value="suppliers">Supplier Comparison</TabsTrigger>
-          <TabsTrigger value="services">Assembly Services</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="builds">Build Configs</TabsTrigger>
+          <TabsTrigger value="components">Components</TabsTrigger>
+          <TabsTrigger value="technical">Tech Analysis</TabsTrigger>
+          <TabsTrigger value="suppliers">Suppliers</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="comparison">Compare</TabsTrigger>
+          <TabsTrigger value="import">Import Calc</TabsTrigger>
+          <TabsTrigger value="services">Services</TabsTrigger>
         </TabsList>
 
         <TabsContent value="builds" className="space-y-6">
@@ -514,6 +556,10 @@ export default function AmanuelPCPage() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="technical" className="space-y-6">
+          <TechnicalBreakdown />
         </TabsContent>
 
         <TabsContent value="components" className="space-y-6">
@@ -750,6 +796,21 @@ export default function AmanuelPCPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <AdvancedCharts 
+            suppliers={[...southAfricanSuppliers, ...chineseSuppliers]} 
+            title="Supplier Market Analysis"
+          />
+        </TabsContent>
+
+        <TabsContent value="comparison" className="space-y-6">
+          <SupplierComparison onExport={() => console.log('Exporting supplier data...')} />
+        </TabsContent>
+
+        <TabsContent value="import" className="space-y-6">
+          <ImportCalculator />
         </TabsContent>
       </Tabs>
     </div>
