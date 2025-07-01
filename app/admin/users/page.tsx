@@ -58,6 +58,8 @@ const userFormSchema = z.object({
   role: z.enum(['admin', 'manager', 'accountant', 'viewer'], {
     required_error: 'Please select a role',
   }),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  generatePassword: z.boolean().optional(),
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -91,6 +93,8 @@ export default function AdminUsersPage() {
       name: '',
       email: '',
       role: 'viewer',
+      password: '',
+      generatePassword: true,
     },
   });
 
@@ -102,8 +106,10 @@ export default function AdminUsersPage() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
+      console.log('Loading users from Firestore...');
       // Fetch all users from Firestore
       const users = await authService.getAllUsers();
+      console.log('Loaded users:', users);
       
       setState(prev => ({
         ...prev,
@@ -134,13 +140,13 @@ export default function AdminUsersPage() {
     try {
       setActionLoading(true);
       
-      // Generate temporary password for the new user
-      const temporaryPassword = generateTemporaryPassword();
+      // Use custom password or generate temporary one
+      const password = data.generatePassword ? generateTemporaryPassword() : data.password;
       
-      // Create user in Firebase Auth and Firestore
-      await authService.signUp({
+      // Create user using admin method (doesn't affect current session)
+      await authService.createUserAsAdmin({
         email: data.email,
-        password: temporaryPassword,
+        password: password,
         name: data.name,
         role: data.role,
       });
@@ -150,9 +156,11 @@ export default function AdminUsersPage() {
         description: `${data.name} has been added to the system.`,
       });
       
-      // Show temporary password in secure dialog
-      setTemporaryPassword(temporaryPassword);
-      setShowPasswordDialog(true);
+      // Show password in secure dialog if generated
+      if (data.generatePassword) {
+        setTemporaryPassword(password);
+        setShowPasswordDialog(true);
+      }
       
       // Refresh users list
       await loadUsers();
@@ -365,6 +373,52 @@ export default function AdminUsersPage() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Password Options */}
+                  <FormField
+                    control={form.control}
+                    name="generatePassword"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">
+                            Generate Password
+                          </FormLabel>
+                          <div className="text-sm text-muted-foreground">
+                            Automatically generate a secure temporary password
+                          </div>
+                        </div>
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="h-4 w-4"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {!form.watch('generatePassword') && (
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Custom Password</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="Enter password (min 6 characters)" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                   
                   <div className="flex gap-2 pt-4">
                     <Button type="submit" disabled={actionLoading} className="flex-1">

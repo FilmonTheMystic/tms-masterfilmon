@@ -11,7 +11,9 @@ import {
   UserCredential,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
-import { auth, db } from './config';
+import { auth, db, firebaseConfig } from './config';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { User } from '@/types';
 
 export interface AuthError {
@@ -215,12 +217,64 @@ class AuthService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    const usersRef = collection(db, 'users');
-    const snapshot = await getDocs(usersRef);
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as User[];
+    try {
+      const usersRef = collection(db, 'users');
+      const snapshot = await getDocs(usersRef);
+      const users = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as User[];
+      
+      console.log(`Found ${users.length} users in Firestore:`, users.map(u => u.email));
+      return users;
+    } catch (error) {
+      console.error('Error fetching users from Firestore:', error);
+      throw error;
+    }
+  }
+
+  // Admin-only user creation that doesn't affect current session
+  async createUserAsAdmin({ email, password, name, role = 'viewer' }: SignUpData): Promise<{ userId: string }> {
+    try {
+      console.log('Admin creating user for:', email);
+      
+      // Create a separate Firebase app instance for admin operations
+      const adminApp = initializeApp(firebaseConfig, 'admin-' + Date.now());
+      const adminAuth = getAuth(adminApp);
+      
+      // Create user with admin auth instance
+      const userCredential = await createUserWithEmailAndPassword(adminAuth, email, password);
+      const { user } = userCredential;
+      console.log('Firebase Auth user created:', user.uid);
+
+      // Update the user's display name
+      await updateProfile(user, { displayName: name });
+      console.log('Display name updated');
+
+      // Create user document in Firestore
+      const userData: Omit<User, 'id'> = {
+        email: user.email!,
+        name,
+        role,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      console.log('Saving user data to Firestore:', userData);
+      await setDoc(doc(db, 'users', user.uid), userData);
+      console.log('User data saved to Firestore successfully');
+
+      // Sign out from admin instance to not affect current session
+      await adminAuth.signOut();
+      
+      // Clean up the temporary admin app
+      await adminApp.delete();
+
+      return { userId: user.uid };
+    } catch (error: any) {
+      console.error('Admin user creation error:', error);
+      throw this.handleAuthError(error);
+    }
   }
 
   async deleteUser(userId: string): Promise<void> {
