@@ -263,16 +263,16 @@ class EmployeeTimeTracker:
     def monitor_attendance(self):
         """Monitor real-time attendance events"""
         def handle_event(event):
-            employee_id = event.user_id
+            emp_id = event.user_id
             timestamp = datetime.fromtimestamp(event.datetime)
             event_type = "Sign In" if event.event_code == 0x1000 else "Sign Out"
             
-            print(f"Employee {employee_id}: {event_type} at {timestamp}")
-            self.log_attendance(employee_id, event_type, timestamp)
+            print(f"Employee {emp_id}: {event_type} at {timestamp}")
+            self.log_attendance(emp_id, event_type, timestamp)
             
         self.event_svc.subscribe(handle_event)
     
-    def log_attendance(self, employee_id, event_type, timestamp):
+    def log_attendance(self, emp_id, event_type, timestamp):
         """Log attendance to database or file"""
         # Your database logging logic here
         pass`}
@@ -322,7 +322,7 @@ class BioLiteTimeSystem {
 
     async enrollEmployee(employeeData) {
         const userInfo = {
-            ID: employeeData.id,
+            ID: employeeData.empId,
             name: employeeData.name,
             startTime: Date.now(),
             endTime: Date.now() + (365 * 24 * 60 * 60 * 1000) // 1 year
@@ -459,7 +459,7 @@ timeSystem.startAttendanceMonitoring();`}
                   <div className="text-sm space-y-1">
                     <div><code className="bg-gray-200 px-2 py-1 rounded">POST /api/users</code> - Create employee</div>
                     <div><code className="bg-gray-200 px-2 py-1 rounded">GET /api/users</code> - List employees</div>
-                    <div><code className="bg-gray-200 px-2 py-1 rounded">PUT /api/users/{id}</code> - Update employee</div>
+                    <div><code className="bg-gray-200 px-2 py-1 rounded">PUT /api/users/&#123;id&#125;</code> - Update employee</div>
                   </div>
                 </div>
                 
