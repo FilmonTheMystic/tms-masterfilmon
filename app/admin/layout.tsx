@@ -136,22 +136,22 @@ function AdminSidebar() {
         fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
         ${isCollapsed ? 'w-16' : 'w-64'} 
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        bg-white/95 backdrop-blur-xl border-r border-gray-200/50 
+        bg-card/95 backdrop-blur-xl border-r border-border 
         transition-all duration-300 ease-in-out
         min-h-screen shadow-xl lg:shadow-none
       `}>
         {/* Header */}
         <div className={`
-          p-6 border-b border-gray-200/50 backdrop-blur-sm
+          p-6 border-b border-border backdrop-blur-sm
           ${isCollapsed ? 'p-4' : 'p-6'}
           transition-all duration-300
         `}>
           <div className="flex items-center justify-between">
             <div className={`flex items-center gap-2 ${isCollapsed ? 'justify-center' : ''}`}>
-              <Shield className="h-6 w-6 text-blue-600 flex-shrink-0" />
+              <Shield className="h-6 w-6 text-primary flex-shrink-0" />
               {!isCollapsed && (
                 <div className="overflow-hidden">
-                  <h1 className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                  <h1 className="text-xl font-bold text-foreground whitespace-nowrap">
                     Admin Panel
                   </h1>
                 </div>
@@ -269,10 +269,10 @@ function AdminHeader() {
   const { user, isSuperAdmin } = useAdminAuth();
   
   return (
-    <header className="bg-white/95 backdrop-blur-xl border-b border-gray-200/50 px-6 py-4 sticky top-0 z-20">
+    <header className="bg-card/95 backdrop-blur-xl border-b border-border px-6 py-4 sticky top-0 z-20">
       <div className="flex items-center justify-between">
         <div className="lg:block">
-          <h2 className="text-lg font-semibold text-gray-900">Administration</h2>
+          <h2 className="text-lg font-semibold text-foreground">Administration</h2>
           <p className="text-sm text-muted-foreground hidden sm:block">
             Welcome back, {user?.name}
           </p>
@@ -281,11 +281,11 @@ function AdminHeader() {
         <div className="flex items-center gap-2">
           <ThemeSelector />
           {isSuperAdmin && (
-            <div className="bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium shadow-sm hidden sm:block">
+            <div className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-3 py-1 rounded-full text-xs font-medium shadow-sm hidden sm:block">
               Super Admin
             </div>
           )}
-          <div className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
+          <div className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-xs font-medium shadow-sm">
             {user?.role}
           </div>
         </div>
@@ -313,7 +313,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50">
+    <div className="min-h-screen bg-background">
       <div className="flex">
         <AdminSidebar />
         <div className="flex-1 lg:ml-0 ml-0">

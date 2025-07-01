@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { Sun, Moon } from 'lucide-react';
-import { useThemeManager } from '@/lib/hooks/useThemeManager';
+import { Sun, Moon, Monitor } from 'lucide-react';
 
 interface ThemeSelectorProps {
   variant?: 'default' | 'ghost' | 'outline';
@@ -15,39 +16,54 @@ export function ThemeSelector({
   size = 'sm', 
   showLabel = false 
 }: ThemeSelectorProps) {
-  const { currentTheme, changeTheme, isLoading } = useThemeManager();
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
-  if (isLoading) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
     return (
       <Button variant={variant} size={size} disabled>
-        <Sun className="h-4 w-4" />
+        <div className="h-4 w-4 animate-pulse bg-gray-300 rounded"></div>
         {showLabel && <span className="ml-2">Theme</span>}
       </Button>
     );
   }
 
-  const isDark = currentTheme.id === 'dark';
-  
-  const toggleTheme = () => {
-    changeTheme(isDark ? 'light' : 'dark');
+  const getNextTheme = () => {
+    if (theme === 'light') return 'dark';
+    if (theme === 'dark') return 'system';
+    return 'light';
   };
+
+  const getIcon = () => {
+    if (theme === 'system') return Monitor;
+    if (resolvedTheme === 'dark') return Sun; // Show sun when dark (to switch to light)
+    return Moon; // Show moon when light (to switch to dark)
+  };
+
+  const getLabel = () => {
+    if (theme === 'system') return 'System';
+    if (resolvedTheme === 'dark') return 'Light';
+    return 'Dark';
+  };
+
+  const Icon = getIcon();
 
   return (
     <Button 
       variant={variant} 
       size={size} 
-      onClick={toggleTheme}
+      onClick={() => setTheme(getNextTheme())}
       className="relative"
-      title={`Switch to ${isDark ? 'light' : 'dark'} theme`}
+      title={`Switch to ${getLabel()} theme`}
     >
-      {isDark ? (
-        <Sun className="h-4 w-4" />
-      ) : (
-        <Moon className="h-4 w-4" />
-      )}
+      <Icon className="h-4 w-4" />
       {showLabel && (
         <span className="ml-2">
-          {isDark ? 'Light' : 'Dark'}
+          {getLabel()}
         </span>
       )}
     </Button>

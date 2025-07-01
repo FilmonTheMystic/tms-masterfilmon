@@ -1,7 +1,8 @@
-// app/layout.tsx - Fixed Root Layout
+// app/layout.tsx - Root Layout with Theme System
 
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -17,14 +18,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className={inter.className} suppressHydrationWarning={true}>
-        <div id="root">
-          {children}
-        </div>
+      <body className={inter.className} suppressHydrationWarning>
+        <ThemeProvider>
+          <div id="root">
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

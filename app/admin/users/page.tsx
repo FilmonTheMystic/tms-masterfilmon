@@ -49,6 +49,7 @@ import { useAdminAuth } from '@/lib/hooks/useAdminAuth';
 import { authService } from '@/lib/firebase/auth';
 import { useToast } from '@/lib/hooks/use-toast';
 import { formatDate } from '@/lib/utils';
+import { PasswordInput } from '@/components/ui/password-input';
 import type { User } from '@/types';
 
 // Form schema for user creation/editing
@@ -408,8 +409,7 @@ export default function AdminUsersPage() {
                         <FormItem>
                           <FormLabel>Custom Password</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="password" 
+                            <PasswordInput 
                               placeholder="Enter password (min 6 characters)" 
                               {...field} 
                             />
