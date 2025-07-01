@@ -13,7 +13,8 @@ import {
   Info,
   Sparkles
 } from 'lucide-react';
-import { useTheme, COLOR_PALETTES, type ColorPalette } from '@/lib/hooks/useTheme';
+import { useTheme } from '@/lib/hooks/useTheme';
+import { colorPalettes, type ColorPalette } from '@/lib/themes/palettes';
 import { useAdminAuth } from '@/lib/hooks/useAdminAuth';
 import { useToast } from '@/lib/hooks/use-toast';
 
@@ -23,109 +24,147 @@ function ColorPreviewCard({ palette, isActive, onSelect, onPreview }: {
   onSelect: () => void;
   onPreview: () => void;
 }) {
+  // Helper to get category emoji
+  const getCategoryEmoji = (category: string) => {
+    switch (category) {
+      case 'Glassmorphic': return '🌊';
+      case 'Cyberpunk': return '🌃';
+      case 'Neumorphic': return '🍃';
+      case 'Maximalist': return '🔥';
+      case 'Cosmic': return '🌌';
+      default: return '🎨';
+    }
+  };
+
   return (
-    <Card className={`cursor-pointer transition-all hover:shadow-md ${
-      isActive ? 'ring-2 ring-blue-500' : ''
-    }`}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">{palette.name}</CardTitle>
+    <Card className={`
+      group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] overflow-hidden
+      ${isActive ? 'ring-2 ring-blue-500 shadow-xl' : 'hover:shadow-lg'}
+    `}>
+      {/* Background Gradient Preview */}
+      <div 
+        className="h-20 w-full relative overflow-hidden"
+        style={{ 
+          background: palette.colors.background.includes('gradient') 
+            ? palette.colors.background 
+            : `linear-gradient(135deg, ${palette.colors.primary}, ${palette.colors.accent})`
+        }}
+      >
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute top-2 right-2">
           {isActive && (
-            <Badge className="bg-green-100 text-green-800">
+            <Badge className="bg-white/90 text-green-800 shadow-lg">
               <Check className="h-3 w-3 mr-1" />
               Active
             </Badge>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">{palette.description}</p>
+        <div className="absolute bottom-2 left-2">
+          <Badge variant="secondary" className="bg-white/80 text-gray-800 text-xs">
+            {getCategoryEmoji(palette.category)} {palette.category}
+          </Badge>
+        </div>
+      </div>
+      
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            {palette.name}
+          </CardTitle>
+          <div 
+            className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+            style={{ backgroundColor: palette.colors.primary }}
+          />
+        </div>
+        <p className="text-sm text-muted-foreground leading-relaxed">{palette.description}</p>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Color Swatches */}
-        <div className="grid grid-cols-5 gap-2">
-          <div className="space-y-1">
+        {/* Enhanced Color Swatches */}
+        <div className="grid grid-cols-6 gap-1.5">
+          {[
+            { key: 'primary', label: 'Primary', color: palette.colors.primary },
+            { key: 'secondary', label: 'Secondary', color: palette.colors.secondary },
+            { key: 'accent', label: 'Accent', color: palette.colors.accent },
+            { key: 'muted', label: 'Muted', color: palette.colors.muted },
+            { key: 'card', label: 'Card', color: palette.colors.card },
+            { key: 'background', label: 'BG', color: palette.colors.background }
+          ].map(({ key, label, color }) => (
+            <div key={key} className="space-y-1 group/swatch">
+              <div 
+                className="w-full h-10 rounded-lg border-2 border-white shadow-sm transition-transform group-hover/swatch:scale-110"
+                style={{ 
+                  background: color.includes('gradient') || color.includes('rgba') 
+                    ? color 
+                    : color
+                }}
+                title={`${label}: ${color}`}
+              />
+              <div className="text-[10px] text-center font-medium text-gray-600">{label}</div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Enhanced Sample UI Preview */}
+        <div 
+          className="p-4 rounded-xl border-2 shadow-inner overflow-hidden relative"
+          style={{ 
+            background: palette.colors.background.includes('gradient') 
+              ? palette.colors.background 
+              : palette.colors.background,
+            borderColor: palette.colors.border 
+          }}
+        >
+          {/* Glassmorphic effect for certain themes */}
+          {palette.category === 'Glassmorphic' && (
+            <div className="absolute inset-0 backdrop-blur-sm bg-white/10" />
+          )}
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-3">
+              <div 
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all hover:shadow-md"
+                style={{ 
+                  backgroundColor: palette.colors.primary, 
+                  color: palette.colors.primaryForeground 
+                }}
+              >
+                Primary Action
+              </div>
+              <div 
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all hover:shadow-sm"
+                style={{ 
+                  borderColor: palette.colors.border,
+                  color: palette.colors.foreground,
+                  backgroundColor: 'transparent'
+                }}
+              >
+                Secondary
+              </div>
+            </div>
             <div 
-              className="w-full h-8 rounded border"
-              style={{ backgroundColor: palette.colors.primary }}
-              title="Primary"
-            />
-            <div className="text-xs text-center">Primary</div>
-          </div>
-          <div className="space-y-1">
-            <div 
-              className="w-full h-8 rounded border"
-              style={{ backgroundColor: palette.colors.secondary }}
-              title="Secondary"
-            />
-            <div className="text-xs text-center">Secondary</div>
-          </div>
-          <div className="space-y-1">
-            <div 
-              className="w-full h-8 rounded border"
-              style={{ backgroundColor: palette.colors.accent }}
-              title="Accent"
-            />
-            <div className="text-xs text-center">Accent</div>
-          </div>
-          <div className="space-y-1">
-            <div 
-              className="w-full h-8 rounded border"
-              style={{ backgroundColor: palette.colors.muted }}
-              title="Muted"
-            />
-            <div className="text-xs text-center">Muted</div>
-          </div>
-          <div className="space-y-1">
-            <div 
-              className="w-full h-8 rounded border"
-              style={{ backgroundColor: palette.colors.background }}
-              title="Background"
-            />
-            <div className="text-xs text-center">Background</div>
+              className="text-sm p-3 rounded-lg shadow-sm"
+              style={{ 
+                backgroundColor: palette.colors.card.includes('rgba') 
+                  ? palette.colors.card 
+                  : palette.colors.card,
+                color: palette.colors.cardForeground,
+                border: `1px solid ${palette.colors.border}`
+              }}
+            >
+              <div className="font-medium mb-1">Sample Component</div>
+              <div className="text-xs opacity-75">Experience the theme's visual impact</div>
+            </div>
           </div>
         </div>
         
-        {/* Sample UI Elements */}
-        <div className="p-3 rounded border" style={{ backgroundColor: palette.colors.background }}>
-          <div className="flex items-center gap-2 mb-2">
-            <div 
-              className="px-2 py-1 rounded text-xs font-medium"
-              style={{ 
-                backgroundColor: palette.colors.primary, 
-                color: palette.colors.primaryForeground 
-              }}
-            >
-              Primary Button
-            </div>
-            <div 
-              className="px-2 py-1 rounded text-xs font-medium border"
-              style={{ 
-                borderColor: palette.colors.border,
-                color: palette.colors.foreground
-              }}
-            >
-              Outline Button
-            </div>
-          </div>
-          <div 
-            className="text-sm p-2 rounded"
-            style={{ 
-              backgroundColor: palette.colors.card,
-              color: palette.colors.cardForeground,
-              border: `1px solid ${palette.colors.border}`
-            }}
-          >
-            Sample card content with this color scheme
-          </div>
-        </div>
-        
-        {/* Action Buttons */}
+        {/* Enhanced Action Buttons */}
         <div className="flex gap-2">
           <Button 
             onClick={onPreview}
             variant="outline" 
             size="sm" 
-            className="flex-1"
+            className="flex-1 transition-all hover:scale-105"
           >
             <Eye className="h-4 w-4 mr-2" />
             Preview
@@ -134,8 +173,12 @@ function ColorPreviewCard({ palette, isActive, onSelect, onPreview }: {
             onClick={onSelect}
             variant={isActive ? "secondary" : "default"}
             size="sm" 
-            className="flex-1"
+            className="flex-1 transition-all hover:scale-105"
             disabled={isActive}
+            style={!isActive ? {
+              backgroundColor: palette.colors.primary,
+              color: palette.colors.primaryForeground
+            } : undefined}
           >
             {isActive ? (
               <>
@@ -143,7 +186,10 @@ function ColorPreviewCard({ palette, isActive, onSelect, onPreview }: {
                 Applied
               </>
             ) : (
-              'Apply Theme'
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Apply Theme
+              </>
             )}
           </Button>
         </div>
@@ -181,7 +227,7 @@ export default function AdminThemePage() {
       
       toast({
         title: 'Theme Applied Successfully!',
-        description: `The ${COLOR_PALETTES.find(p => p.id === paletteId)?.name} theme has been applied to the entire application.`,
+        description: `The ${colorPalettes.find(p => p.id === paletteId)?.name} theme has been applied to the entire application.`,
       });
     } catch (error) {
       console.error('Failed to apply theme:', error);
@@ -231,22 +277,46 @@ export default function AdminThemePage() {
   
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Palette className="h-6 w-6" />
-            Theme Settings
-          </h1>
-          <p className="text-muted-foreground">
-            Customize the appearance of the entire tenant management system
-          </p>
+      {/* Epic Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 p-8 text-white">
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="relative z-10 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-3 mb-2">
+              <Palette className="h-8 w-8" />
+              Epic Theme Studio
+              <Sparkles className="h-6 w-6 text-yellow-300" />
+            </h1>
+            <p className="text-blue-100 text-lg">
+              Transform your entire application with jaw-dropping 2025 color palettes
+            </p>
+            <div className="flex items-center gap-4 mt-3 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                <span>5 Epic Themes Available</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                <span>Full-Screen Transformation</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="hidden lg:flex flex-col gap-2">
+            <Button 
+              variant="secondary" 
+              onClick={() => window.location.reload()}
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reset Preview
+            </Button>
+          </div>
         </div>
         
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Reset Preview
-        </Button>
+        {/* Animated background elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pink-400/30 to-purple-600/30 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-400/30 to-cyan-600/30 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       {/* Info Alert */}
@@ -293,9 +363,40 @@ export default function AdminThemePage() {
 
       {/* Available Themes */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Available Color Palettes</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {COLOR_PALETTES.map((palette) => (
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              🎨 Epic 2025 Theme Collection
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Choose from 5 carefully crafted themes based on latest design trends
+            </p>
+          </div>
+          <Badge variant="secondary" className="hidden sm:block">
+            {colorPalettes.length} Themes Available
+          </Badge>
+        </div>
+        
+        {/* Theme Category Filter */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {['All', 'Glassmorphic', 'Cyberpunk', 'Neumorphic', 'Maximalist', 'Cosmic'].map((category) => (
+            <Badge 
+              key={category}
+              variant={category === 'All' ? 'default' : 'secondary'}
+              className="cursor-pointer hover:scale-105 transition-transform"
+            >
+              {category === 'Glassmorphic' && '🌊 '}
+              {category === 'Cyberpunk' && '🌃 '}
+              {category === 'Neumorphic' && '🍃 '}
+              {category === 'Maximalist' && '🔥 '}
+              {category === 'Cosmic' && '🌌 '}
+              {category}
+            </Badge>
+          ))}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+          {colorPalettes.map((palette) => (
             <ColorPreviewCard
               key={palette.id}
               palette={palette}

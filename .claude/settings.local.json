@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "WebFetch(domain:www.supremainc.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:supremainc.github.io)",
+      "WebFetch(domain:bs2api.biostar2.com)",
+      "Bash(mkdir:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
