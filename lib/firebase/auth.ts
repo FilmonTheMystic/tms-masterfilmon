@@ -266,9 +266,6 @@ class AuthService {
 
       // Sign out from admin instance to not affect current session
       await adminAuth.signOut();
-      
-      // Clean up the temporary admin app
-      await adminApp.delete();
 
       return { userId: user.uid };
     } catch (error: any) {

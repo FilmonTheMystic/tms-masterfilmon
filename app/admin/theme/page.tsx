@@ -27,11 +27,7 @@ function ColorPreviewCard({ palette, isActive, onSelect, onPreview }: {
   // Helper to get category emoji
   const getCategoryEmoji = (category: string) => {
     switch (category) {
-      case 'Glassmorphic': return '🌊';
-      case 'Cyberpunk': return '🌃';
-      case 'Neumorphic': return '🍃';
-      case 'Maximalist': return '🔥';
-      case 'Cosmic': return '🌌';
+      case 'System': return '⚙️';
       default: return '🎨';
     }
   };
@@ -277,46 +273,29 @@ export default function AdminThemePage() {
   
   return (
     <div className="space-y-6">
-      {/* Epic Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 p-8 text-white">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="relative z-10 flex items-center justify-between">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-6 border">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3 mb-2">
-              <Palette className="h-8 w-8" />
-              Epic Theme Studio
-              <Sparkles className="h-6 w-6 text-yellow-300" />
+            <h1 className="text-2xl font-bold flex items-center gap-2 mb-2">
+              <Palette className="h-6 w-6" />
+              Theme Settings
             </h1>
-            <p className="text-blue-100 text-lg">
-              Transform your entire application with jaw-dropping 2025 color palettes
+            <p className="text-muted-foreground">
+              Choose from clean, professional themes designed for optimal usability
             </p>
-            <div className="flex items-center gap-4 mt-3 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                <span>5 Epic Themes Available</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-                <span>Full-Screen Transformation</span>
-              </div>
-            </div>
           </div>
           
           <div className="hidden lg:flex flex-col gap-2">
             <Button 
-              variant="secondary" 
+              variant="outline" 
               onClick={() => window.location.reload()}
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Reset Preview
             </Button>
           </div>
         </div>
-        
-        {/* Animated background elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pink-400/30 to-purple-600/30 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-400/30 to-cyan-600/30 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       {/* Info Alert */}
@@ -365,34 +344,16 @@ export default function AdminThemePage() {
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              🎨 Epic 2025 Theme Collection
+            <h2 className="text-xl font-semibold">
+              Available Themes
             </h2>
             <p className="text-muted-foreground mt-1">
-              Choose from 5 carefully crafted themes based on latest design trends
+              Clean, professional themes for optimal readability and usability
             </p>
           </div>
           <Badge variant="secondary" className="hidden sm:block">
-            {colorPalettes.length} Themes Available
+            {colorPalettes.length} Themes
           </Badge>
-        </div>
-        
-        {/* Theme Category Filter */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {['All', 'Glassmorphic', 'Cyberpunk', 'Neumorphic', 'Maximalist', 'Cosmic'].map((category) => (
-            <Badge 
-              key={category}
-              variant={category === 'All' ? 'default' : 'secondary'}
-              className="cursor-pointer hover:scale-105 transition-transform"
-            >
-              {category === 'Glassmorphic' && '🌊 '}
-              {category === 'Cyberpunk' && '🌃 '}
-              {category === 'Neumorphic' && '🍃 '}
-              {category === 'Maximalist' && '🔥 '}
-              {category === 'Cosmic' && '🌌 '}
-              {category}
-            </Badge>
-          ))}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
