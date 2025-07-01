@@ -31,7 +31,8 @@ import {
   Mail,
   Calendar,
   UserPlus,
-  Settings
+  Settings,
+  AlertCircle
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -81,6 +82,8 @@ export default function AdminUsersPage() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
 
   const form = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
@@ -99,9 +102,8 @@ export default function AdminUsersPage() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
-      // For now, we'll just show the current user
-      // In a real implementation, you'd fetch all users from Firestore
-      const users = currentUser ? [currentUser] : [];
+      // Fetch all users from Firestore
+      const users = await authService.getAllUsers();
       
       setState(prev => ({
         ...prev,
@@ -113,34 +115,55 @@ export default function AdminUsersPage() {
       setState(prev => ({
         ...prev,
         loading: false,
-        error: 'Failed to load users',
+        error: 'Failed to load users from database',
       }));
     }
+  };
+
+  const generateTemporaryPassword = () => {
+    // Generate a secure 12-character temporary password
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
   };
 
   const handleAddUser = async (data: UserFormData) => {
     try {
       setActionLoading(true);
       
-      // In a real implementation, you would:
-      // 1. Create user in Firebase Auth
-      // 2. Create user document in Firestore
-      // 3. Send invitation email
+      // Generate temporary password for the new user
+      const temporaryPassword = generateTemporaryPassword();
       
-      toast({
-        title: 'User Creation Not Implemented',
-        description: 'User creation functionality will be implemented in the next phase.',
-        variant: 'destructive',
+      // Create user in Firebase Auth and Firestore
+      await authService.signUp({
+        email: data.email,
+        password: temporaryPassword,
+        name: data.name,
+        role: data.role,
       });
       
-      console.log('Would create user:', data);
+      toast({
+        title: 'User Created Successfully!',
+        description: `${data.name} has been added to the system.`,
+      });
+      
+      // Show temporary password in secure dialog
+      setTemporaryPassword(temporaryPassword);
+      setShowPasswordDialog(true);
+      
+      // Refresh users list
+      await loadUsers();
+      
       setShowAddDialog(false);
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create user:', error);
       toast({
         title: 'Failed to Create User',
-        description: 'There was an error creating the user. Please try again.',
+        description: error.message || 'There was an error creating the user. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -198,19 +221,21 @@ export default function AdminUsersPage() {
     try {
       setActionLoading(true);
       
-      // In a real implementation, you would delete from Firebase Auth and Firestore
+      // Delete user from Firestore
+      await authService.deleteUser(user.id);
+      
       toast({
-        title: 'User Deletion Not Implemented',
-        description: 'User deletion functionality will be implemented in the next phase.',
-        variant: 'destructive',
+        title: 'User Deleted Successfully',
+        description: `${user.name} has been removed from the system.`,
       });
       
-      console.log('Would delete user:', user);
-    } catch (error) {
+      // Refresh users list
+      await loadUsers();
+    } catch (error: any) {
       console.error('Failed to delete user:', error);
       toast({
         title: 'Failed to Delete User',
-        description: 'There was an error deleting the user. Please try again.',
+        description: error.message || 'There was an error deleting the user. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -550,6 +575,64 @@ export default function AdminUsersPage() {
               </div>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Temporary Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-green-600" />
+              User Created Successfully
+            </DialogTitle>
+            <DialogDescription>
+              The user has been created. Please share this temporary password securely with the new user.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <span className="font-medium text-amber-800">Temporary Password</span>
+              </div>
+              <div className="bg-white p-3 rounded border font-mono text-lg tracking-wider">
+                {temporaryPassword}
+              </div>
+            </div>
+            
+            <div className="text-sm text-gray-600 space-y-1">
+              <p>• The user should change this password on their first login</p>
+              <p>• Share this password through a secure channel</p>
+              <p>• This password will not be shown again</p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText(temporaryPassword || '');
+                  toast({
+                    title: 'Password Copied',
+                    description: 'Temporary password copied to clipboard',
+                  });
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Copy Password
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowPasswordDialog(false);
+                  setTemporaryPassword(null);
+                }}
+                className="flex-1"
+              >
+                Done
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

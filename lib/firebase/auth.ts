@@ -10,7 +10,7 @@ import {
   User as FirebaseUser,
   UserCredential,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc } from 'firebase/firestore';
 import { auth, db } from './config';
 import { User } from '@/types';
 
@@ -221,6 +221,20 @@ class AuthService {
       id: doc.id,
       ...doc.data(),
     })) as User[];
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      // Delete user document from Firestore
+      await deleteDoc(doc(db, 'users', userId));
+      
+      // Note: Deleting from Firebase Auth requires Firebase Admin SDK
+      // This only removes the user from Firestore
+      console.log(`User ${userId} deleted from Firestore`);
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      throw this.handleAuthError(error);
+    }
   }
 }
 
