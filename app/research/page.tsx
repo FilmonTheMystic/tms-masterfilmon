@@ -25,6 +25,15 @@ const researchProjects: ResearchProject[] = [
     category: 'Technology',
     url: '/research/amanuelpc'
   },
+  {
+    id: 'biolite_n2',
+    title: 'BioLite N2 Integration',
+    description: 'Research on Suprema BioLite N2 biometric device integration for employee time tracking systems',
+    status: 'active',
+    lastUpdated: '2025-07-01',
+    category: 'Security & Biometrics',
+    url: '/research/biolite_n2'
+  },
 ];
 
 export default function ResearchPage() {
