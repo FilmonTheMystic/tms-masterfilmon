@@ -102,9 +102,13 @@ class AuthService {
     try {
       const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
       if (userDoc.exists()) {
+        const data = userDoc.data();
         return {
           id: currentUser.uid,
-          ...userDoc.data(),
+          ...data,
+          // Convert Firestore Timestamps to JavaScript Dates
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
         } as User;
       }
       return null;
@@ -220,10 +224,16 @@ class AuthService {
     try {
       const usersRef = collection(db, 'users');
       const snapshot = await getDocs(usersRef);
-      const users = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as User[];
+      const users = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          // Convert Firestore Timestamps to JavaScript Dates
+          createdAt: data.createdAt?.toDate() || new Date(),
+          updatedAt: data.updatedAt?.toDate() || new Date(),
+        };
+      }) as User[];
       
       console.log(`Found ${users.length} users in Firestore:`, users.map(u => u.email));
       return users;
