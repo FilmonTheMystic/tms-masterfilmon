@@ -104,43 +104,13 @@ class AuthService {
       if (userDoc.exists()) {
         const data = userDoc.data();
         
-        // Helper function to convert various date formats to JavaScript Date
-        const convertToDate = (dateValue: any): Date => {
-          if (!dateValue) return new Date();
-          
-          // If it's a Firestore Timestamp
-          if (dateValue.toDate && typeof dateValue.toDate === 'function') {
-            return dateValue.toDate();
-          }
-          
-          // If it's already a Date
-          if (dateValue instanceof Date) {
-            return dateValue;
-          }
-          
-          // If it's a string or number, try to parse it
-          if (typeof dateValue === 'string' || typeof dateValue === 'number') {
-            const parsed = new Date(dateValue);
-            if (!isNaN(parsed.getTime())) {
-              return parsed;
-            }
-          }
-          
-          // If it's an object with seconds (Firestore format)
-          if (typeof dateValue === 'object' && dateValue.seconds) {
-            return new Date(dateValue.seconds * 1000);
-          }
-          
-          // Fallback to current date
-          console.warn('Unable to parse date:', dateValue);
-          return new Date();
-        };
-        
         return {
           id: currentUser.uid,
-          ...data,
-          createdAt: convertToDate(data.createdAt),
-          updatedAt: convertToDate(data.updatedAt),
+          email: data.email,
+          name: data.name,
+          role: data.role,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         } as User;
       }
       return null;
@@ -258,44 +228,21 @@ class AuthService {
       const snapshot = await getDocs(usersRef);
       const users = snapshot.docs.map(doc => {
         const data = doc.data();
+        console.log(`Processing user ${data.email}:`, {
+          createdAt: data.createdAt,
+          createdAtType: typeof data.createdAt,
+          updatedAt: data.updatedAt,
+          updatedAtType: typeof data.updatedAt
+        });
         
-        // Helper function to convert various date formats to JavaScript Date
-        const convertToDate = (dateValue: any): Date => {
-          if (!dateValue) return new Date();
-          
-          // If it's a Firestore Timestamp
-          if (dateValue.toDate && typeof dateValue.toDate === 'function') {
-            return dateValue.toDate();
-          }
-          
-          // If it's already a Date
-          if (dateValue instanceof Date) {
-            return dateValue;
-          }
-          
-          // If it's a string or number, try to parse it
-          if (typeof dateValue === 'string' || typeof dateValue === 'number') {
-            const parsed = new Date(dateValue);
-            if (!isNaN(parsed.getTime())) {
-              return parsed;
-            }
-          }
-          
-          // If it's an object with seconds (Firestore format)
-          if (typeof dateValue === 'object' && dateValue.seconds) {
-            return new Date(dateValue.seconds * 1000);
-          }
-          
-          // Fallback to current date
-          console.warn('Unable to parse date:', dateValue);
-          return new Date();
-        };
-        
+        // Just return the data as-is and let the UI handle date formatting
         return {
           id: doc.id,
-          ...data,
-          createdAt: convertToDate(data.createdAt),
-          updatedAt: convertToDate(data.updatedAt),
+          email: data.email,
+          name: data.name,
+          role: data.role,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         };
       }) as User[];
       

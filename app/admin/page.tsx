@@ -21,6 +21,7 @@ import {
   propertyService, 
   invoiceService 
 } from '@/lib/firebase/db';
+import { authService } from '@/lib/firebase/auth';
 import { formatCurrency } from '@/lib/utils';
 
 interface SystemStats {
@@ -50,10 +51,11 @@ export default function AdminOverviewPage() {
       setError(null);
       
       // Load data in parallel
-      const [properties, tenants, invoices] = await Promise.all([
+      const [properties, tenants, invoices, users] = await Promise.all([
         propertyService.getAll(),
         tenantService.getAll(),
         invoiceService.getAll(),
+        authService.getAllUsers(),
       ]);
       
       // Calculate stats
@@ -63,8 +65,8 @@ export default function AdminOverviewPage() {
         .filter(t => t.isActive)
         .reduce((sum, t) => sum + t.monthlyRent, 0);
       
-      // Mock user count (would come from Firebase Auth or users collection)
-      const totalUsers = 1; // For now, just the current user
+      // Get actual user count
+      const totalUsers = users.length;
       
       // Determine system health
       let systemHealth: 'healthy' | 'warning' | 'error' = 'healthy';
