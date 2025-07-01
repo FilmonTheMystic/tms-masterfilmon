@@ -15,30 +15,46 @@ export function formatCurrency(amount: number): string {
 export function formatDate(date: Date | string | any): string {
   let dateObj: Date;
   
+  // Handle undefined or null
+  if (!date || date === undefined || date === null) {
+    return 'Date not available';
+  }
+  
   // Handle Firestore Timestamp
-  if (date && typeof date === 'object' && date.toDate && typeof date.toDate === 'function') {
+  if (typeof date === 'object' && date.toDate && typeof date.toDate === 'function') {
     dateObj = date.toDate();
   }
-  // Handle Firestore object format
-  else if (date && typeof date === 'object' && date.seconds) {
-    dateObj = new Date(date.seconds * 1000);
+  // Handle Firestore object format with seconds and nanoseconds
+  else if (typeof date === 'object' && typeof date.seconds === 'number') {
+    dateObj = new Date(date.seconds * 1000 + (date.nanoseconds || 0) / 1000000);
   }
   // Handle Firestore object format with _seconds
-  else if (date && typeof date === 'object' && date._seconds) {
+  else if (typeof date === 'object' && typeof date._seconds === 'number') {
     dateObj = new Date(date._seconds * 1000);
   }
   // Handle string
   else if (typeof date === 'string') {
-    dateObj = new Date(date);
+    const parsed = new Date(date);
+    if (isNaN(parsed.getTime())) {
+      return 'Invalid date';
+    }
+    dateObj = parsed;
   }
   // Handle Date object
   else if (date instanceof Date) {
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
     dateObj = date;
   }
-  // Fallback
+  // Handle number (timestamp)
+  else if (typeof date === 'number') {
+    dateObj = new Date(date);
+  }
+  // Fallback for unknown format
   else {
-    console.warn('Unable to format date:', date);
-    dateObj = new Date();
+    console.warn('Unable to format date - unknown format:', date, 'Type:', typeof date);
+    return 'Date format error';
   }
   
   return new Intl.DateTimeFormat('en-ZA', {

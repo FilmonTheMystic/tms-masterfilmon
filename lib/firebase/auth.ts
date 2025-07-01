@@ -109,8 +109,8 @@ class AuthService {
           email: data.email,
           name: data.name,
           role: data.role,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
+          createdAt: data.createdAt || data.updatedAt || null,
+          updatedAt: data.updatedAt || data.createdAt || null,
         } as User;
       }
       return null;
@@ -235,14 +235,14 @@ class AuthService {
           updatedAtType: typeof data.updatedAt
         });
         
-        // Just return the data as-is and let the UI handle date formatting
+        // Return the data with fallback for missing createdAt
         return {
           id: doc.id,
           email: data.email,
           name: data.name,
           role: data.role,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
+          createdAt: data.createdAt || data.updatedAt || null,
+          updatedAt: data.updatedAt || data.createdAt || null,
         };
       }) as User[];
       
