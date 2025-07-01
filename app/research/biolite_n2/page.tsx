@@ -577,11 +577,9 @@ timeSystem.startAttendanceMonitoring();`}
                     <h4 className="font-medium">Official G-SDK Documentation</h4>
                     <p className="text-sm text-gray-600">Complete API reference and tutorials</p>
                   </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <a href="https://supremainc.github.io/g-sdk/" target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View Docs
-                    </a>
+                  <Button size="sm" variant="outline" onClick={() => window.open("https://supremainc.github.io/g-sdk/", "_blank")}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Docs
                   </Button>
                 </div>
 
@@ -590,11 +588,9 @@ timeSystem.startAttendanceMonitoring();`}
                     <h4 className="font-medium">BioStar 2 API Reference</h4>
                     <p className="text-sm text-gray-600">REST API endpoints and examples</p>
                   </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <a href="https://bs2api.biostar2.com/" target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      API Docs
-                    </a>
+                  <Button size="sm" variant="outline" onClick={() => window.open("https://bs2api.biostar2.com/", "_blank")}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    API Docs
                   </Button>
                 </div>
 
@@ -603,11 +599,9 @@ timeSystem.startAttendanceMonitoring();`}
                     <h4 className="font-medium">GitHub SDK Repository</h4>
                     <p className="text-sm text-gray-600">Source code and examples</p>
                   </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <a href="https://github.com/supremainc/g-sdk" target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      GitHub
-                    </a>
+                  <Button size="sm" variant="outline" onClick={() => window.open("https://github.com/supremainc/g-sdk", "_blank")}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    GitHub
                   </Button>
                 </div>
 
@@ -616,11 +610,9 @@ timeSystem.startAttendanceMonitoring();`}
                     <h4 className="font-medium">Suprema Support Portal</h4>
                     <p className="text-sm text-gray-600">Technical support and knowledge base</p>
                   </div>
-                  <Button size="sm" variant="outline" asChild>
-                    <a href="https://support.supremainc.com/" target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Support
-                    </a>
+                  <Button size="sm" variant="outline" onClick={() => window.open("https://support.supremainc.com/", "_blank")}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Support
                   </Button>
                 </div>
               </div>
