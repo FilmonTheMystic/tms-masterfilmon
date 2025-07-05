@@ -91,9 +91,10 @@
   --ring: #f8fafc;
 }
 
-/* System preference fallback */
+/* System preference fallback - only applies when no theme is explicitly set */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
+  :root:not([data-theme]),
+  :root[data-theme="system"] {
     --background: #020617;
     --foreground: #f8fafc;
     --card: #0f172a;
@@ -120,6 +121,34 @@
   }
 }
 
+@media (prefers-color-scheme: light) {
+  :root[data-theme="system"] {
+    --background: #ffffff;
+    --foreground: #09090b;
+    --card: #ffffff;
+    --card-foreground: #09090b;
+    --popover: #ffffff;
+    --popover-foreground: #09090b;
+    --primary: #0f172a;
+    --primary-foreground: #f8fafc;
+    --secondary: #f1f5f9;
+    --secondary-foreground: #0f172a;
+    --muted: #f1f5f9;
+    --muted-foreground: #64748b;
+    --accent: #f1f5f9;
+    --accent-foreground: #0f172a;
+    --destructive: #ef4444;
+    --destructive-foreground: #f8fafc;
+    --success: #22c55e;
+    --success-foreground: #f8fafc;
+    --warning: #f59e0b;
+    --warning-foreground: #f8fafc;
+    --border: #e2e8f0;
+    --input: #ffffff;
+    --ring: #0f172a;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -129,11 +158,18 @@
   }
 
   /* Theme transition animations */
-  *, *::before, *::after {
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  * {
+    transition: background-color 0.2s ease-in-out, 
+                border-color 0.2s ease-in-out, 
+                color 0.2s ease-in-out,
+                box-shadow 0.2s ease-in-out,
+                fill 0.2s ease-in-out,
+                stroke 0.2s ease-in-out;
+  }
+
+  /* Prevent transitions during theme initialization */
+  .theme-transition-disabled * {
+    transition: none !important;
   }
   
   /* Mobile-responsive optimizations */
