@@ -116,8 +116,8 @@ export default function DashboardLayout({
         />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
-          <div className="h-full">
+        <main className="flex-1 overflow-auto bg-background">
+          <div className="h-full bg-background">
             {children}
           </div>
         </main>

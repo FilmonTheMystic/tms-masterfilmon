@@ -218,7 +218,7 @@ export function Header({ onMenuClick, showMobileMenu = false }: HeaderProps) {
 
         {/* Page title */}
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-foreground">
             {getPageTitle()}
           </h1>
           

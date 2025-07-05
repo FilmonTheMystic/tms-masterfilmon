@@ -161,7 +161,7 @@ export default function EditPropertyPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">Edit Property</h1>
+          <h1 className="text-2xl font-bold text-foreground">Edit Property</h1>
           <nav className="text-sm text-muted-foreground">
             <Link href="/dashboard/properties" className="hover:text-primary">Properties</Link>
             <span className="mx-2">/</span>

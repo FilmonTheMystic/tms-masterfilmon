@@ -10,7 +10,7 @@ export default function PaymentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
+          <h1 className="text-2xl font-bold text-foreground">Payments</h1>
           <p className="text-muted-foreground">
             Track and manage tenant payments and transactions
           </p>

@@ -267,7 +267,7 @@ export default function GenerateInvoicePage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Generate Invoice</h1>
+          <h1 className="text-2xl font-bold text-foreground">Generate Invoice</h1>
           <p className="text-muted-foreground">
             Create a new invoice for your tenant
           </p>

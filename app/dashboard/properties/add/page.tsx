@@ -150,7 +150,7 @@ export default function AddPropertyPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Add New Property</h1>
+          <h1 className="text-2xl font-bold text-foreground">Add New Property</h1>
           <p className="text-muted-foreground">
             Create a new property to manage tenants and units
           </p>

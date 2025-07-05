@@ -130,7 +130,7 @@ export default function UnitsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Units</h1>
+          <h1 className="text-2xl font-bold text-foreground">Units</h1>
           <p className="text-muted-foreground">
             Manage all units across your properties
           </p>

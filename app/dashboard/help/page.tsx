@@ -10,7 +10,7 @@ export default function HelpPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Help & Support</h1>
+          <h1 className="text-2xl font-bold text-foreground">Help & Support</h1>
           <p className="text-muted-foreground">
             Get help and support for your tenant management system
           </p>

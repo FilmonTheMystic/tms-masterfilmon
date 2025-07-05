@@ -214,7 +214,7 @@ export default function PropertyUnitsPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">Manage Units</h1>
+          <h1 className="text-2xl font-bold text-foreground">Manage Units</h1>
           <nav className="text-sm text-muted-foreground">
             <Link href="/dashboard/properties" className="hover:text-primary">Properties</Link>
             <span className="mx-2">/</span>

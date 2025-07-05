@@ -130,7 +130,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Monthly Reports</h1>
+          <h1 className="text-2xl font-bold text-foreground">Monthly Reports</h1>
           <p className="text-muted-foreground">
             Generate and analyze financial reports for your properties
           </p>

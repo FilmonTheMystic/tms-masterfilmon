@@ -144,7 +144,7 @@ export default function AddTenantPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Add New Tenant</h1>
+          <h1 className="text-2xl font-bold text-foreground">Add New Tenant</h1>
           <p className="text-muted-foreground">
             Add a tenant to one of your properties
           </p>
