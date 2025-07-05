@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Search, FileText, Clock, ExternalLink } from 'lucide-react';
+import { Search, FileText, Clock, ExternalLink, Download } from 'lucide-react';
 import Link from 'next/link';
 
 interface ResearchProject {
@@ -34,6 +34,15 @@ const researchProjects: ResearchProject[] = [
     category: 'Security & Biometrics',
     url: '/research/biolite_n2'
   },
+  {
+    id: 'dmso',
+    title: 'DMSO Therapeutic Research',
+    description: 'Comprehensive analysis of DMSO (Dimethyl Sulfoxide) as a miraculous therapy for pain management and healing',
+    status: 'active',
+    lastUpdated: '2025-07-05',
+    category: 'Medical Research',
+    url: '/research/dmso'
+  },
 ];
 
 export default function ResearchPage() {
@@ -48,6 +57,12 @@ export default function ResearchPage() {
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleDownloadPDF = (projectId: string) => {
+    // PDF download logic
+    console.log(`Downloading PDF for project: ${projectId}`);
+    // This will be implemented with the PDF generator
   };
 
   return (
@@ -154,12 +169,23 @@ export default function ResearchPage() {
                       {project.category}
                     </span>
                   </div>
-                  <Link href={project.url}>
-                    <Button size="sm" className="flex items-center gap-2">
-                      <ExternalLink className="h-4 w-4" />
-                      View Project
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleDownloadPDF(project.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download PDF
                     </Button>
-                  </Link>
+                    <Link href={project.url}>
+                      <Button size="sm" className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        View Project
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </CardContent>
             </Card>

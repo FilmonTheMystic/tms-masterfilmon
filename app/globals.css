@@ -38,85 +38,85 @@
 :root {
   --radius: 0.5rem;
   
-  /* Light Theme Colors - Clean and Professional */
+  /* Light Theme Colors - Modern and Clean */
   --background: #ffffff;
-  --foreground: #1a202c;
+  --foreground: #09090b;
   --card: #ffffff;
-  --card-foreground: #1a202c;
+  --card-foreground: #09090b;
   --popover: #ffffff;
-  --popover-foreground: #1a202c;
-  --primary: #3182ce;
-  --primary-foreground: #ffffff;
-  --secondary: #f7fafc;
-  --secondary-foreground: #2d3748;
-  --muted: #f7fafc;
-  --muted-foreground: #718096;
-  --accent: #edf2f7;
-  --accent-foreground: #2d3748;
-  --destructive: #e53e3e;
-  --destructive-foreground: #ffffff;
-  --success: #38a169;
-  --success-foreground: #ffffff;
-  --warning: #d69e2e;
-  --warning-foreground: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #0f172a;
+  --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  --success: #22c55e;
+  --success-foreground: #f8fafc;
+  --warning: #f59e0b;
+  --warning-foreground: #f8fafc;
   --border: #e2e8f0;
   --input: #ffffff;
-  --ring: #3182ce;
+  --ring: #0f172a;
 }
 
 [data-theme="dark"] {
-  /* Dark Theme Colors - Comfortable and High Contrast */
-  --background: #1a202c;
-  --foreground: #f7fafc;
-  --card: #2d3748;
-  --card-foreground: #f7fafc;
-  --popover: #2d3748;
-  --popover-foreground: #f7fafc;
-  --primary: #63b3ed;
-  --primary-foreground: #1a202c;
-  --secondary: #4a5568;
-  --secondary-foreground: #e2e8f0;
-  --muted: #4a5568;
-  --muted-foreground: #cbd5e0;
-  --accent: #4a5568;
-  --accent-foreground: #e2e8f0;
-  --destructive: #fc8181;
-  --destructive-foreground: #1a202c;
-  --success: #68d391;
-  --success-foreground: #1a202c;
-  --warning: #f6e05e;
-  --warning-foreground: #1a202c;
-  --border: #4a5568;
-  --input: #2d3748;
-  --ring: #63b3ed;
+  /* Dark Theme Colors - Modern and Comfortable */
+  --background: #020617;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  --primary: #f8fafc;
+  --primary-foreground: #0f172a;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  --success: #22c55e;
+  --success-foreground: #f8fafc;
+  --warning: #f59e0b;
+  --warning-foreground: #f8fafc;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #f8fafc;
 }
 
 /* System preference fallback */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --background: #1a202c;
-    --foreground: #f7fafc;
-    --card: #2d3748;
-    --card-foreground: #f7fafc;
-    --popover: #2d3748;
-    --popover-foreground: #f7fafc;
-    --primary: #63b3ed;
-    --primary-foreground: #1a202c;
-    --secondary: #4a5568;
-    --secondary-foreground: #e2e8f0;
-    --muted: #4a5568;
-    --muted-foreground: #cbd5e0;
-    --accent: #4a5568;
-    --accent-foreground: #e2e8f0;
-    --destructive: #fc8181;
-    --destructive-foreground: #1a202c;
-    --success: #68d391;
-    --success-foreground: #1a202c;
-    --warning: #f6e05e;
-    --warning-foreground: #1a202c;
-    --border: #4a5568;
-    --input: #2d3748;
-    --ring: #63b3ed;
+    --background: #020617;
+    --foreground: #f8fafc;
+    --card: #0f172a;
+    --card-foreground: #f8fafc;
+    --popover: #0f172a;
+    --popover-foreground: #f8fafc;
+    --primary: #f8fafc;
+    --primary-foreground: #0f172a;
+    --secondary: #1e293b;
+    --secondary-foreground: #f8fafc;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --accent: #1e293b;
+    --accent-foreground: #f8fafc;
+    --destructive: #ef4444;
+    --destructive-foreground: #f8fafc;
+    --success: #22c55e;
+    --success-foreground: #f8fafc;
+    --warning: #f59e0b;
+    --warning-foreground: #f8fafc;
+    --border: #1e293b;
+    --input: #1e293b;
+    --ring: #f8fafc;
   }
 }
 
