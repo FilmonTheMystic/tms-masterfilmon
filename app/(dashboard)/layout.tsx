@@ -70,10 +70,10 @@ export default function DashboardLayout({
   // Don't render anything until mounted (prevents hydration mismatch)
   if (!mounted) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -81,10 +81,10 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Authenticating...</p>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Authenticating...</p>
         </div>
       </div>
     );
@@ -95,7 +95,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="h-screen flex bg-gray-50">
+    <div className="h-screen flex bg-background">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex">
         <Sidebar

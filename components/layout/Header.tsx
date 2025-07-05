@@ -198,7 +198,7 @@ export function Header({ onMenuClick, showMobileMenu = false }: HeaderProps) {
   };
 
   return (
-    <header className="h-16 border-b bg-white flex items-center justify-between px-4 lg:px-6">
+    <header className="h-16 border-b bg-background flex items-center justify-between px-4 lg:px-6">
       {/* Left side */}
       <div className="flex items-center gap-4">
         {/* Mobile menu button */}
