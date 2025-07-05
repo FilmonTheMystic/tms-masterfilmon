@@ -161,7 +161,7 @@ export function Sidebar({ isCollapsed = false, onToggle }: SidebarProps) {
 
   return (
     <div className={cn(
-      'flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300',
+      'flex flex-col h-full bg-background border-r border-border transition-all duration-300',
       isCollapsed ? 'w-16' : 'w-64'
     )}>
       {/* Header */}

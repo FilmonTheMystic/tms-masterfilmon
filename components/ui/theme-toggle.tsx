@@ -14,43 +14,81 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-16 h-8 bg-muted rounded-full animate-pulse"></div>
+      <div className="w-20 h-8 bg-muted rounded-full animate-pulse"></div>
     );
   }
 
-  const toggleTheme = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  const cycleTheme = () => {
+    if (theme === 'light') {
+      setTheme('dark');
+    } else if (theme === 'dark') {
+      setTheme('system');
+    } else {
+      setTheme('light');
+    }
   };
 
-  const isDark = resolvedTheme === 'dark';
+  const getThemeIcon = () => {
+    switch (theme) {
+      case 'light':
+        return <Sun className="h-3 w-3 text-amber-500" />;
+      case 'dark':
+        return <Moon className="h-3 w-3 text-slate-300" />;
+      case 'system':
+        return <Monitor className="h-3 w-3 text-blue-500" />;
+      default:
+        return <Monitor className="h-3 w-3 text-blue-500" />;
+    }
+  };
+
+  const getBackgroundColor = () => {
+    switch (theme) {
+      case 'light':
+        return 'bg-amber-100 hover:bg-amber-200';
+      case 'dark':
+        return 'bg-slate-800 hover:bg-slate-700';
+      case 'system':
+        return 'bg-blue-100 hover:bg-blue-200';
+      default:
+        return 'bg-slate-200 hover:bg-slate-300';
+    }
+  };
+
+  const getIconPosition = () => {
+    switch (theme) {
+      case 'light':
+        return 'translate-x-1';
+      case 'dark':
+        return 'translate-x-7';
+      case 'system':
+        return 'translate-x-13';
+      default:
+        return 'translate-x-13';
+    }
+  };
 
   return (
     <button
-      onClick={toggleTheme}
+      onClick={cycleTheme}
       className={`
-        relative inline-flex h-8 w-16 items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background
-        ${isDark 
-          ? 'bg-slate-800 hover:bg-slate-700' 
-          : 'bg-slate-200 hover:bg-slate-300'
-        }
+        relative inline-flex h-8 w-20 items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background
+        ${getBackgroundColor()}
       `}
       role="switch"
-      aria-checked={isDark}
-      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      title={`Current: ${isDark ? 'Dark' : 'Light'} mode`}
+      aria-checked={resolvedTheme === 'dark'}
+      aria-label={`Current theme: ${theme}. Click to cycle themes`}
+      title={`Current: ${theme?.charAt(0).toUpperCase() + theme?.slice(1)} mode`}
     >
-      <span
+      <div
         className={`
-          inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-all duration-300 ease-in-out flex items-center justify-center
-          ${isDark ? 'translate-x-9' : 'translate-x-1'}
+          relative h-6 w-6 transform rounded-full bg-white shadow-lg transition-all duration-300 ease-in-out
+          ${getIconPosition()}
         `}
       >
-        {isDark ? (
-          <Moon className="h-4 w-4 text-slate-600" />
-        ) : (
-          <Sun className="h-4 w-4 text-amber-500" />
-        )}
-      </span>
+        <div className="absolute inset-0 flex items-center justify-center">
+          {getThemeIcon()}
+        </div>
+      </div>
     </button>
   );
 }
