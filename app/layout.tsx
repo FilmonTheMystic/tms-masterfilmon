@@ -24,9 +24,9 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <ThemeScript />
       </head>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className={`${inter.className} bg-background text-foreground`} suppressHydrationWarning>
         <ThemeProvider>
-          <div id="root">
+          <div id="root" className="bg-background min-h-screen">
             {children}
           </div>
         </ThemeProvider>
