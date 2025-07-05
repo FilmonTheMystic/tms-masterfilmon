@@ -22,7 +22,6 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  TreeMap,
   Sankey,
   Area,
   AreaChart,
@@ -142,7 +141,7 @@ export function AdvancedCharts({ suppliers, title = "Supplier Analytics" }: Adva
                     supplier.deliveryTime.includes('2-4') ? 3 : 2
     }));
 
-  // TreeMap data for supplier distribution
+  // Bar chart data for supplier distribution
   const treeMapData = Object.entries(typeData).map(([type, count]) => ({
     name: type.charAt(0).toUpperCase() + type.slice(1),
     size: count,
@@ -410,36 +409,35 @@ export function AdvancedCharts({ suppliers, title = "Supplier Analytics" }: Adva
           </CardContent>
         </Card>
 
-        {/* TreeMap for Supplier Types */}
+        {/* Supplier Type Distribution as Bar Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Supplier Type Hierarchy</CardTitle>
-            <CardDescription>Visual representation of supplier distribution</CardDescription>
+            <CardTitle>Supplier Type Distribution</CardTitle>
+            <CardDescription>Detailed breakdown of supplier categories</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <TreeMap
-                data={treeMapData}
-                dataKey="size"
-                ratio={4/3}
-                stroke="#fff"
-                fill="#8884d8"
-              >
+              <BarChart data={treeMapData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
                 <Tooltip 
-                  content={({ active, payload }) => {
+                  content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
                         <div className="bg-white p-3 border rounded shadow-lg">
-                          <p className="font-medium">{data.name}</p>
-                          <p>Count: {data.count}</p>
+                          <p className="font-medium">{label}</p>
+                          <p>Suppliers: {data.count}</p>
+                          <p>Percentage: {((data.count / suppliers.length) * 100).toFixed(1)}%</p>
                         </div>
                       );
                     }
                     return null;
                   }}
                 />
-              </TreeMap>
+                <Bar dataKey="size" fill="#8884d8" />
+              </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

@@ -15,7 +15,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Flask,
+  Beaker,
   Microscope,
   Shield,
   Activity
@@ -136,7 +136,7 @@ export default function DMSOResearchPage() {
               Updated {researchData.lastUpdated}
             </span>
             <span className="flex items-center gap-1">
-              <Flask className="h-4 w-4" />
+              <Beaker className="h-4 w-4" />
               {researchData.category}
             </span>
           </div>
